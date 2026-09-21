@@ -9,6 +9,7 @@ describe('parseLogLines', () => {
 
     expect(entries[0]).toMatchObject({
       lineNumber: 1,
+      endLineNumber: 1,
       timestamp: '2026-09-21T08:14:04Z',
       level: 'error',
     })
@@ -17,6 +18,24 @@ describe('parseLogLines', () => {
 
   it('marks lines without a level as unknown', () => {
     expect(parseLogLines('worker started without a level')[0].level).toBe('unknown')
+  })
+
+  it('folds stack frames into the previous log entry', () => {
+    const entries = parseLogLines(`2026-09-21T08:14:04Z ERROR payment failed order_id=900012
+    at chargeCustomer (checkout.ts:42:7)
+    at async runJob (worker.ts:88:3)
+2026-09-21T08:14:08Z WARN retry scheduled order_id=900012`)
+
+    expect(entries).toHaveLength(2)
+    expect(entries[0]).toMatchObject({
+      lineNumber: 1,
+      endLineNumber: 3,
+      level: 'error',
+      continuationLines: 2,
+      stackTraceLines: 2,
+      pattern: 'payment failed order_id=<number> <stack-trace>',
+    })
+    expect(entries[1]).toMatchObject({ lineNumber: 4, level: 'warn' })
   })
 })
 
@@ -44,6 +63,27 @@ WARN retry scheduled order_id=900013`)
       pattern: 'payment failed order_id=<number>',
       count: 2,
       firstLine: 2,
+    })
+  })
+
+  it('counts continuation lines without inflating level totals', () => {
+    const analysis = analyzeLogs(`2026-09-21T08:14:04Z ERROR payment failed order_id=900012
+TypeError: Cannot read properties of undefined
+    at chargeCustomer (checkout.ts:42:7)
+2026-09-21T08:14:05Z ERROR payment failed order_id=900013
+TypeError: Cannot read properties of undefined
+    at chargeCustomer (checkout.ts:42:7)`)
+
+    expect(analysis.totalLines).toBe(6)
+    expect(analysis.parsedLines).toBe(2)
+    expect(analysis.continuationLines).toBe(4)
+    expect(analysis.stackTraceLines).toBe(4)
+    expect(analysis.levelCounts.error).toBe(2)
+    expect(analysis.topPatterns[0]).toMatchObject({
+      pattern: 'payment failed order_id=<number> <stack-trace>',
+      count: 2,
+      continuationLines: 4,
+      stackTraceLines: 4,
     })
   })
 })

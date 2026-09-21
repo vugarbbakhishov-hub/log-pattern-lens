@@ -3,23 +3,27 @@ import { analyzeLogs } from './log'
 import { buildCsvReport, buildJsonReport, reportFileName, reportMimeType, type ReportFormat } from './report'
 
 const sampleLogs = `2026-09-21T08:14:01Z INFO api request completed request_id=req-1001 user_id=4281 duration=132ms
-2026-09-21T08:14:03Z WARN payment retry scheduled order_id=900012 reason=timeout
 2026-09-21T08:14:04Z ERROR payment failed order_id=900012 code=502 trace_id=6f1a2c3d-1111-4b22-8c33-998877665544
+TypeError: Cannot read properties of undefined
+    at chargeCustomer (checkout.ts:42:7)
+    at async runJob (worker.ts:88:3)
 2026-09-21T08:14:05Z ERROR payment failed order_id=900013 code=502 trace_id=7a2b3c4d-2222-4c33-9d44-887766554433
-2026-09-21T08:14:08Z INFO api request completed request_id=req-1002 user_id=4282 duration=98ms
+TypeError: Cannot read properties of undefined
+    at chargeCustomer (checkout.ts:42:7)
+    at async runJob (worker.ts:88:3)
 2026-09-21T08:14:12Z DEBUG cache warmed key=plans region=eu
 2026-09-21T08:14:18Z WARN payment retry scheduled order_id=900013 reason=timeout`
 
 function App() {
   const [logText, setLogText] = useState(sampleLogs)
-  const [sourceName, setSourceName] = useState('sample.log')
+  const [sourceName, setSourceName] = useState('sample-stack.log')
   const analysis = useMemo(() => analyzeLogs(logText), [logText])
   const repeatedPatterns = analysis.topPatterns.filter((pattern) => pattern.count > 1)
   const primaryPattern = analysis.topPatterns[0]
 
   const loadSample = () => {
     setLogText(sampleLogs)
-    setSourceName('sample.log')
+    setSourceName('sample-stack.log')
   }
 
   const clear = () => {
@@ -48,7 +52,7 @@ function App() {
           <span className="brand-mark" aria-hidden="true">L</span>
           <span>Log Pattern Lens</span>
         </a>
-        <span className="privacy-pill"><span aria-hidden="true">●</span> Browser only</span>
+        <span className="privacy-pill"><span aria-hidden="true">?</span> Browser only</span>
       </header>
 
       <section className="hero" id="top">
@@ -56,8 +60,8 @@ function App() {
           <p className="eyebrow">Private log triage</p>
           <h1>Find the pattern hiding inside noisy logs.</h1>
           <p className="hero-copy">
-            Paste a log excerpt and get level counts, repeated error patterns and the observed time
-            range. Everything stays in this browser tab.
+            Paste a log excerpt and get level counts, repeated error patterns, folded stack traces and
+            the observed time range. Everything stays in this browser tab.
           </p>
         </div>
         <div className="hero-card">
@@ -105,15 +109,17 @@ function App() {
           </div>
 
           <div className="metric-grid">
-            <article><strong>{analysis.parsedLines}</strong><span>Parsed lines</span></article>
+            <article><strong>{analysis.parsedLines}</strong><span>Parsed entries</span></article>
             <article><strong>{analysis.levelCounts.error}</strong><span>Errors</span></article>
+            <article><strong>{analysis.stackTraceLines}</strong><span>Stack trace lines</span></article>
+            <article><strong>{analysis.continuationLines}</strong><span>Folded lines</span></article>
             <article><strong>{analysis.levelCounts.warn}</strong><span>Warnings</span></article>
             <article><strong>{repeatedPatterns.length}</strong><span>Repeated patterns</span></article>
           </div>
 
           <div className="time-range">
             <span>Observed range</span>
-            <strong>{analysis.firstTimestamp && analysis.lastTimestamp ? `${analysis.firstTimestamp} → ${analysis.lastTimestamp}` : 'No timestamps detected'}</strong>
+            <strong>{analysis.firstTimestamp && analysis.lastTimestamp ? `${analysis.firstTimestamp} -> ${analysis.lastTimestamp}` : 'No timestamps detected'}</strong>
           </div>
 
           <div className="level-list">
@@ -143,8 +149,13 @@ function App() {
               <div>
                 <strong>{pattern.pattern}</strong>
                 <p>{pattern.examples[0]}</p>
+                <small className="pattern-meta">
+                  line {pattern.firstLine}
+                  {pattern.stackTraceLines > 0 ? ` ? ${pattern.stackTraceLines} stack trace line${pattern.stackTraceLines === 1 ? '' : 's'}` : ''}
+                  {pattern.continuationLines > pattern.stackTraceLines ? ` ? ${pattern.continuationLines - pattern.stackTraceLines} folded continuation line${pattern.continuationLines - pattern.stackTraceLines === 1 ? '' : 's'}` : ''}
+                </small>
               </div>
-              <span>{pattern.count}×</span>
+              <span>{pattern.count}x</span>
             </article>
           ))}
           {analysis.topPatterns.length === 0 && <p className="empty-state">Paste logs to see repeated patterns.</p>}

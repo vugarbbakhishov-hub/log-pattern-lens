@@ -4,6 +4,8 @@ import { buildCsvReport, buildJsonReport, reportFileName, reportMimeType } from 
 
 const analysis = analyzeLogs(`2026-09-21T08:14:01Z INFO api ok request_id=req-1
 2026-09-21T08:14:04Z ERROR payment failed order_id=900012
+TypeError: Cannot read properties of undefined
+    at chargeCustomer (checkout.ts:42:7)
 2026-09-21T08:14:05Z ERROR payment failed order_id=900013`)
 const meta = { source: 'incident.log', generatedAt: '2026-09-21T10:00:00.000Z' }
 
@@ -13,8 +15,10 @@ describe('buildJsonReport', () => {
 
     expect(report.tool).toBe('log-pattern-lens')
     expect(report.summary.parsedLines).toBe(3)
+    expect(report.summary.continuationLines).toBe(2)
+    expect(report.summary.stackTraceLines).toBe(2)
     expect(report.levelCounts.error).toBe(2)
-    expect(report.topPatterns[0].pattern).toBe('payment failed order_id=<number>')
+    expect(report.topPatterns[0].pattern).toBe('api ok request_id=req-1')
   })
 })
 
@@ -23,8 +27,10 @@ describe('buildCsvReport', () => {
     const lines = buildCsvReport(analysis, meta).split('\n')
 
     expect(lines).toContain('Source,incident.log')
+    expect(lines).toContain('Continuation lines,2')
+    expect(lines).toContain('Stack trace lines,2')
     expect(lines).toContain('error,2')
-    expect(lines).toContain('Pattern,Count,Levels,First line,Example')
+    expect(lines).toContain('Pattern,Count,Levels,First line,Continuation lines,Stack trace lines,Example')
   })
 })
 

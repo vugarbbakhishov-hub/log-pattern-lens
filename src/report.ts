@@ -28,6 +28,8 @@ export function buildJsonReport(analysis: LogAnalysis, meta: ReportMeta): string
         totalLines: analysis.totalLines,
         parsedLines: analysis.parsedLines,
         timestampedLines: analysis.timestampedLines,
+        continuationLines: analysis.continuationLines,
+        stackTraceLines: analysis.stackTraceLines,
         firstTimestamp: analysis.firstTimestamp,
         lastTimestamp: analysis.lastTimestamp,
       },
@@ -45,8 +47,10 @@ export function buildCsvReport(analysis: LogAnalysis, meta: ReportMeta): string 
     ['Source', meta.source],
     ['Generated', meta.generatedAt],
     ['Total lines', analysis.totalLines],
-    ['Parsed lines', analysis.parsedLines],
-    ['Timestamped lines', analysis.timestampedLines],
+    ['Parsed entries', analysis.parsedLines],
+    ['Timestamped entries', analysis.timestampedLines],
+    ['Continuation lines', analysis.continuationLines],
+    ['Stack trace lines', analysis.stackTraceLines],
     ['First timestamp', analysis.firstTimestamp ?? ''],
     ['Last timestamp', analysis.lastTimestamp ?? ''],
   ]
@@ -55,12 +59,14 @@ export function buildCsvReport(analysis: LogAnalysis, meta: ReportMeta): string 
     ...levels.map((level) => [level, analysis.levelCounts[level]]),
   ]
   const patternRows = [
-    ['Pattern', 'Count', 'Levels', 'First line', 'Example'],
+    ['Pattern', 'Count', 'Levels', 'First line', 'Continuation lines', 'Stack trace lines', 'Example'],
     ...analysis.topPatterns.map((pattern) => [
       pattern.pattern,
       pattern.count,
       pattern.levels.join(' | '),
       pattern.firstLine,
+      pattern.continuationLines,
+      pattern.stackTraceLines,
       pattern.examples[0] ?? '',
     ]),
   ]
