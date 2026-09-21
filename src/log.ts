@@ -96,8 +96,13 @@ function isStackTraceLine(line: string): boolean {
     /^\s+at\s+\S+/i.test(line) ||
     /^Caused by:/i.test(trimmed) ||
     /^Suppressed:/i.test(trimmed) ||
+    /^Exception in thread /i.test(trimmed) ||
     /^Traceback \(most recent call last\):/i.test(trimmed) ||
     /^File "[^"]+", line \d+/i.test(trimmed) ||
+    /^panic:/i.test(trimmed) ||
+    /^goroutine \d+ \[[^\]]+\]:/i.test(trimmed) ||
+    /^[\w./-]+\.[A-Za-z_$][\w$]*(?:\([^)]*\))?$/.test(trimmed) ||
+    /^\S.*\.(?:go|rs|py|js|ts|tsx|jsx):\d+(?::\d+)?\b/.test(trimmed) ||
     /^\.\.\. \d+ (more|common frames omitted)/i.test(trimmed) ||
     /^[A-Za-z_$][\w.$]*(Error|Exception):\s+/.test(trimmed)
   )

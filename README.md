@@ -16,7 +16,7 @@ https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 - Detect `error`, `warn`, `info`, `debug`, `trace` and unknown lines
 - Detect common ISO and time-only timestamps
 - Normalize volatile values such as UUIDs, IP addresses, long IDs and durations
-- Fold multiline stack traces into the previous log entry instead of inflating error counts
+- Fold multiline stack traces, including JavaScript, Python, Go panic and JVM-style frames, into the previous log entry instead of inflating error counts
 - Surface repeated message patterns with counts and examples
 - Export a CSV or JSON triage report in the current tab
 - Responsive interface with keyboard focus states
@@ -38,7 +38,7 @@ npm run lint
 npm run build
 ```
 
-The tests cover level detection, timestamp extraction, multiline stack trace folding, pattern normalization, repeated pattern counts, JSON reports, CSV reports and safe report file names.
+The tests cover level detection, timestamp extraction, multiline stack trace folding across common runtimes, pattern normalization, repeated pattern counts, JSON reports, CSV reports and safe report file names.
 
 ## Privacy
 

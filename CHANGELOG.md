@@ -8,7 +8,7 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
-- Multiline stack trace folding so continuation frames stay attached to the previous log entry.
+- Multiline stack trace folding so JavaScript, Python, Go panic and JVM-style continuation frames stay attached to the previous log entry.
 - Report summary fields for continuation lines and stack trace lines.
 
 ## [0.1.0] - 2026-09-21

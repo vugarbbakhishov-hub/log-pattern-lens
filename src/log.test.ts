@@ -37,6 +37,41 @@ describe('parseLogLines', () => {
     })
     expect(entries[1]).toMatchObject({ lineNumber: 4, level: 'warn' })
   })
+
+  it('folds Go panic traces into the previous log entry', () => {
+    const entries = parseLogLines(`2026-09-21T08:15:04Z ERROR worker crashed job_id=1234
+panic: runtime error: invalid memory address or nil pointer dereference
+goroutine 17 [running]:
+main.runWorker()
+/app/main.go:48 +0x21
+2026-09-21T08:15:10Z INFO worker restarted job_id=1234`)
+
+    expect(entries).toHaveLength(2)
+    expect(entries[0]).toMatchObject({
+      lineNumber: 1,
+      endLineNumber: 5,
+      level: 'error',
+      continuationLines: 4,
+      stackTraceLines: 4,
+      pattern: 'worker crashed job_id=<number> <stack-trace>',
+    })
+    expect(entries[1]).toMatchObject({ lineNumber: 6, level: 'info' })
+  })
+
+  it('folds JVM exception headers into the previous log entry', () => {
+    const entries = parseLogLines(`2026-09-21T08:16:04Z ERROR payment worker failed
+Exception in thread "main" java.lang.IllegalStateException: payment state missing
+    at com.example.PaymentWorker.run(PaymentWorker.java:42)
+2026-09-21T08:16:08Z WARN retry scheduled`)
+
+    expect(entries).toHaveLength(2)
+    expect(entries[0]).toMatchObject({
+      continuationLines: 2,
+      stackTraceLines: 2,
+      pattern: 'payment worker failed <stack-trace>',
+    })
+  })
+
 })
 
 describe('normalizePattern', () => {
