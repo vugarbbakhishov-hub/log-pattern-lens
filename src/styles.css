@@ -36,6 +36,11 @@ main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
 .panel-heading { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
 .panel-heading h2 { margin: 0; font-size: 24px; letter-spacing: -.035em; }
 .source-name { width: min(220px, 100%); border: 1px solid #cdd6e3; border-radius: 999px; padding: 9px 13px; color: #516071; background: #f8fafc; font-size: 12px; font-weight: 700; }
+.sample-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+.sample-strip button { display: grid; gap: 6px; justify-items: start; text-align: left; min-height: 96px; border-radius: 15px; padding: 14px; background: #f8fafc; }
+.sample-strip button[aria-pressed="true"] { border-color: #6d5dfc; background: #eef2ff; color: #3730a3; }
+.sample-strip strong { font-size: 13px; }
+.sample-strip span { color: #64748b; font-size: 12px; line-height: 1.45; }
 textarea { width: 100%; min-height: 330px; resize: vertical; margin-top: 22px; border: 1px solid #ccd6e3; border-radius: 16px; padding: 16px; color: #1f2937; background: #fbfdff; font: 400 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .actions { display: flex; gap: 9px; margin-top: 14px; flex-wrap: wrap; }
 button { border: 1px solid #cbd5e1; border-radius: 11px; padding: 10px 15px; background: #fff; color: #334155; cursor: pointer; font-size: 13px; font-weight: 750; }
@@ -89,6 +94,8 @@ footer { text-align: center; color: #64748b; font-size: 12px; padding: 0 0 42px;
   .hero { border-radius: 22px; }
   .panel { padding: 20px; border-radius: 18px; }
   .panel-heading { flex-direction: column; }
+  .sample-strip { grid-template-columns: 1fr; }
+  .sample-strip button { min-height: 0; }
   .metric-grid { grid-template-columns: 1fr; }
   .level-list div { grid-template-columns: 64px 1fr 28px; }
 }

@@ -16,6 +16,7 @@ https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 - Detect `error`, `warn`, `info`, `debug`, `trace` and unknown lines
 - Detect common ISO and time-only timestamps
 - Normalize volatile values such as UUIDs, IP addresses, long IDs and durations
+- Load focused sample logs for stack traces, sensitive data review and latency bursts
 - Fold multiline stack traces, including JavaScript, Python, Go panic and JVM-style frames, into the previous log entry instead of inflating error counts
 - Surface repeated message patterns with counts and examples
 - Preview CSV or JSON reports with visible line counts before downloading or copying a short excerpt
@@ -48,7 +49,7 @@ The app has no backend, analytics or upload endpoint. Log text is processed in t
 
 ## Scope
 
-This tool is for fast local triage. It does not parse every logging framework, join multiline stack traces or replace a full observability platform. Its goal is to make a pasted excerpt easier to scan before opening a larger incident workflow.
+This tool is for fast local triage. It does not parse every logging framework or replace a full observability platform. Its goal is to make a pasted excerpt easier to scan before opening a larger incident workflow.
 
 ## Changelog
 

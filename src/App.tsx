@@ -9,7 +9,19 @@ import {
   type ReportFormat,
 } from './report'
 
-const sampleLogs = `2026-09-21T08:14:01Z INFO api request completed request_id=req-1001 user_id=4281 duration=132ms
+interface LogSample {
+  name: string
+  fileName: string
+  description: string
+  contents: string
+}
+
+const logSamples: LogSample[] = [
+  {
+    name: 'Stack trace',
+    fileName: 'sample-stack.log',
+    description: 'Repeated payment errors with folded TypeScript frames.',
+    contents: `2026-09-21T08:14:01Z INFO api request completed request_id=req-1001 user_id=4281 duration=132ms
 2026-09-21T08:14:04Z ERROR payment failed order_id=900012 code=502 trace_id=6f1a2c3d-1111-4b22-8c33-998877665544
 TypeError: Cannot read properties of undefined
     at chargeCustomer (checkout.ts:42:7)
@@ -19,11 +31,35 @@ TypeError: Cannot read properties of undefined
     at chargeCustomer (checkout.ts:42:7)
     at async runJob (worker.ts:88:3)
 2026-09-21T08:14:12Z DEBUG cache warmed key=plans region=eu
-2026-09-21T08:14:18Z WARN payment retry scheduled order_id=900013 reason=timeout`
+2026-09-21T08:14:18Z WARN payment retry scheduled order_id=900013 reason=timeout`,
+  },
+  {
+    name: 'Security review',
+    fileName: 'sample-sensitive.log',
+    description: 'Fake credentials and contact data to demonstrate sharing warnings.',
+    contents: `2026-09-21T09:00:01Z INFO support export started email=demo.user@example.com
+2026-09-21T09:00:02Z WARN config included api_key=fake_demo_key_12345
+2026-09-21T09:00:03Z ERROR outbound auth failed Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZW1vIn0.signature
+2026-09-21T09:00:04Z DEBUG aws credential probe key=AKIA1234567890ABCDEF
+2026-09-21T09:00:05Z INFO support export blocked reason=sensitive-fields-detected`,
+  },
+  {
+    name: 'Latency burst',
+    fileName: 'sample-latency.log',
+    description: 'Repeated slow endpoints with request IDs and duration patterns.',
+    contents: `2026-09-21T10:22:11Z INFO GET /api/orders/38191 completed request_id=req-77 duration=812ms
+2026-09-21T10:22:12Z WARN GET /api/orders/38192 slow request_id=req-78 duration=1280ms
+2026-09-21T10:22:13Z WARN GET /api/orders/38193 slow request_id=req-79 duration=1315ms
+2026-09-21T10:22:16Z ERROR GET /api/orders/38194 failed request_id=req-80 code=504 duration=5001ms
+2026-09-21T10:22:17Z WARN retry scheduled request_id=req-80 attempt=2`,
+  },
+]
+
+const defaultSample = logSamples[0]
 
 function App() {
-  const [logText, setLogText] = useState(sampleLogs)
-  const [sourceName, setSourceName] = useState('sample-stack.log')
+  const [logText, setLogText] = useState(defaultSample.contents)
+  const [sourceName, setSourceName] = useState(defaultSample.fileName)
   const [previewFormat, setPreviewFormat] = useState<ReportFormat>('csv')
   const [copyStatus, setCopyStatus] = useState('')
   const analysis = useMemo(() => analyzeLogs(logText), [logText])
@@ -34,9 +70,9 @@ function App() {
     [analysis, previewFormat, sourceName],
   )
 
-  const loadSample = () => {
-    setLogText(sampleLogs)
-    setSourceName('sample-stack.log')
+  const loadSample = (sample: LogSample) => {
+    setLogText(sample.contents)
+    setSourceName(sample.fileName)
     setCopyStatus('')
   }
 
@@ -110,6 +146,20 @@ function App() {
             />
           </div>
 
+          <div className="sample-strip" aria-label="Sample log presets">
+            {logSamples.map((sample) => (
+              <button
+                key={sample.fileName}
+                type="button"
+                aria-pressed={sourceName === sample.fileName && logText === sample.contents}
+                onClick={() => loadSample(sample)}
+              >
+                <strong>{sample.name}</strong>
+                <span>{sample.description}</span>
+              </button>
+            ))}
+          </div>
+
           <textarea
             aria-label="Log input"
             value={logText}
@@ -120,7 +170,7 @@ function App() {
             spellCheck={false}
           />
           <div className="actions">
-            <button className="primary" type="button" onClick={loadSample}>Load sample</button>
+            <button className="primary" type="button" onClick={() => loadSample(defaultSample)}>Reset sample</button>
             <button type="button" onClick={clear}>Clear</button>
             <button type="button" onClick={() => downloadReport('csv')}>Download CSV report</button>
             <button type="button" onClick={() => downloadReport('json')}>Download JSON report</button>

@@ -12,6 +12,7 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Report summary fields for continuation lines and stack trace lines.
 - Report preview panel with CSV/JSON toggles, visible line counts and clipboard copy support.
 - Possible sensitive line detection for tokens, API keys, JWTs, AWS access keys and email addresses.
+- Sample log presets for stack trace, sensitive data review and latency burst scenarios.
 
 ## [0.1.0] - 2026-09-21
 
