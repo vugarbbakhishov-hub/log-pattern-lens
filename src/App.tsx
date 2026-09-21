@@ -3,7 +3,7 @@ import { analyzeLogs } from './log'
 import {
   buildCsvReport,
   buildJsonReport,
-  buildReportPreview,
+  buildReportPreviewDetails,
   reportFileName,
   reportMimeType,
   type ReportFormat,
@@ -30,7 +30,7 @@ function App() {
   const repeatedPatterns = analysis.topPatterns.filter((pattern) => pattern.count > 1)
   const primaryPattern = analysis.topPatterns[0]
   const reportPreview = useMemo(
-    () => buildReportPreview(analysis, { source: sourceName, generatedAt: 'preview' }, previewFormat),
+    () => buildReportPreviewDetails(analysis, { source: sourceName, generatedAt: 'preview' }, previewFormat),
     [analysis, previewFormat, sourceName],
   )
 
@@ -62,8 +62,8 @@ function App() {
 
   const copyPreview = async () => {
     try {
-      await navigator.clipboard.writeText(reportPreview)
-      setCopyStatus('Copied preview')
+      await navigator.clipboard.writeText(reportPreview.text)
+      setCopyStatus(`Copied ${reportPreview.previewLines} preview line${reportPreview.previewLines === 1 ? '' : 's'}`)
     } catch {
       setCopyStatus('Copy unavailable')
     }
@@ -206,10 +206,15 @@ function App() {
             JSON preview
           </button>
           <button type="button" onClick={copyPreview}>Copy preview</button>
+          <span className="preview-lines">
+            {reportPreview.truncated
+              ? `Showing ${reportPreview.visibleLines} of ${reportPreview.totalLines} lines`
+              : `${reportPreview.totalLines} line${reportPreview.totalLines === 1 ? '' : 's'}`}
+          </span>
           {copyStatus && <span role="status">{copyStatus}</span>}
         </div>
 
-        <pre>{reportPreview || 'Paste logs to preview a report.'}</pre>
+        <pre>{reportPreview.text || 'Paste logs to preview a report.'}</pre>
       </section>
 
       <footer><p>Built for quick local log review. No uploads, no analytics.</p></footer>

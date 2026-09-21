@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { analyzeLogs } from './log'
-import { buildCsvReport, buildJsonReport, buildReportPreview, reportFileName, reportMimeType } from './report'
+import {
+  buildCsvReport,
+  buildJsonReport,
+  buildReportPreview,
+  buildReportPreviewDetails,
+  reportFileName,
+  reportMimeType,
+} from './report'
 
 const analysis = analyzeLogs(`2026-09-21T08:14:01Z INFO api ok request_id=req-1
 2026-09-21T08:14:04Z ERROR payment failed order_id=900012
@@ -37,18 +44,34 @@ describe('buildCsvReport', () => {
 
 describe('buildReportPreview', () => {
   it('returns a bounded preview with a remaining line count', () => {
-    const preview = buildReportPreview(analysis, meta, 'json', 5).split('\n')
+    const details = buildReportPreviewDetails(analysis, meta, 'json', 5)
+    const preview = details.text.split('\n')
 
     expect(preview).toHaveLength(6)
     expect(preview[0]).toBe('{')
     expect(preview.at(-1)).toMatch(/\.\.\. \d+ more lines/)
+    expect(details).toMatchObject({
+      visibleLines: 5,
+      previewLines: 6,
+      truncated: true,
+    })
+    expect(details.hiddenLines).toBeGreaterThan(0)
   })
 
   it('does not append a remaining count when the report fits', () => {
-    const preview = buildReportPreview(analysis, meta, 'csv', 100)
+    const details = buildReportPreviewDetails(analysis, meta, 'csv', 100)
 
-    expect(preview).toContain('Source,incident.log')
-    expect(preview).not.toContain('more lines')
+    expect(details.text).toContain('Source,incident.log')
+    expect(details.text).not.toContain('more lines')
+    expect(details.hiddenLines).toBe(0)
+    expect(details.previewLines).toBe(details.totalLines)
+    expect(details.truncated).toBe(false)
+  })
+
+  it('keeps the string helper as a convenient wrapper', () => {
+    expect(buildReportPreview(analysis, meta, 'json', 5)).toBe(
+      buildReportPreviewDetails(analysis, meta, 'json', 5).text,
+    )
   })
 })
 

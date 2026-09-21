@@ -7,6 +7,15 @@ export interface ReportMeta {
   generatedAt: string
 }
 
+export interface ReportPreview {
+  text: string
+  totalLines: number
+  visibleLines: number
+  hiddenLines: number
+  previewLines: number
+  truncated: boolean
+}
+
 function escapeCsv(value: string | number): string {
   const text = String(value)
   return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
@@ -81,20 +90,36 @@ export function buildCsvReport(analysis: LogAnalysis, meta: ReportMeta): string 
 }
 
 
+export function buildReportPreviewDetails(
+  analysis: LogAnalysis,
+  meta: ReportMeta,
+  format: ReportFormat,
+  maxLines = 18,
+): ReportPreview {
+  const fullReport = format === 'csv' ? buildCsvReport(analysis, meta) : buildJsonReport(analysis, meta)
+  const lines = fullReport.trimEnd().split('\n')
+  const limit = Math.max(1, maxLines)
+  const visible = lines.slice(0, limit)
+  const hiddenLines = lines.length - visible.length
+  const previewLines = hiddenLines > 0 ? [...visible, `... ${hiddenLines} more line${hiddenLines === 1 ? '' : 's'}`] : visible
+
+  return {
+    text: previewLines.join('\n'),
+    totalLines: lines.length,
+    visibleLines: visible.length,
+    hiddenLines,
+    previewLines: previewLines.length,
+    truncated: hiddenLines > 0,
+  }
+}
+
 export function buildReportPreview(
   analysis: LogAnalysis,
   meta: ReportMeta,
   format: ReportFormat,
   maxLines = 18,
 ): string {
-  const fullReport = format === 'csv' ? buildCsvReport(analysis, meta) : buildJsonReport(analysis, meta)
-  const lines = fullReport.trimEnd().split('\n')
-  const visibleLines = lines.slice(0, maxLines)
-  const hiddenLines = lines.length - visibleLines.length
-
-  if (hiddenLines <= 0) return visibleLines.join('\n')
-
-  return [...visibleLines, `... ${hiddenLines} more line${hiddenLines === 1 ? '' : 's'}`].join('\n')
+  return buildReportPreviewDetails(analysis, meta, format, maxLines).text
 }
 
 export function reportFileName(source: string, format: ReportFormat): string {
