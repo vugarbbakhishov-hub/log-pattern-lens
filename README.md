@@ -18,6 +18,7 @@ https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 - Normalize volatile values such as UUIDs, IP addresses, long IDs and durations
 - Fold multiline stack traces, including JavaScript, Python, Go panic and JVM-style frames, into the previous log entry instead of inflating error counts
 - Surface repeated message patterns with counts and examples
+- Preview CSV or JSON reports before downloading or copying a short excerpt
 - Export a CSV or JSON triage report in the current tab
 - Responsive interface with keyboard focus states
 

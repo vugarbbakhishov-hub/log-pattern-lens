@@ -53,7 +53,7 @@ button.primary:hover { background: #5848e8; }
 .level-list div { display: grid; grid-template-columns: 72px 1fr 36px; gap: 10px; align-items: center; }
 .level-list span { color: #475569; font: 650 11px/1 ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; }
 meter { width: 100%; height: 12px; }
-.patterns { margin: 20px 0 48px; }
+.patterns { margin: 20px 0 20px; }
 .patterns .panel-heading > span { color: #64748b; font-size: 12px; font-weight: 700; }
 .pattern-list { margin-top: 20px; display: grid; gap: 10px; }
 .pattern-list article { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; padding: 16px; border: 1px solid #e2e8f0; border-radius: 16px; background: #fbfdff; }
@@ -62,6 +62,12 @@ meter { width: 100%; height: 12px; }
 .pattern-meta { display: block; margin-top: 8px; color: #7c8da1; font-size: 11px; font-weight: 700; }
 .pattern-list article > span { border-radius: 999px; padding: 7px 10px; background: #ede9fe; color: #5145cd; font-weight: 850; }
 .empty-state { margin: 0; color: #64748b; }
+.report-preview { margin: 0 0 48px; }
+.report-preview .panel-heading > span { color: #64748b; font-size: 12px; font-weight: 800; }
+.preview-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-top: 18px; }
+.preview-toolbar button[aria-pressed="true"] { background: #111827; border-color: #111827; color: #fff; }
+.preview-toolbar span { color: #21a67a; font-size: 12px; font-weight: 800; }
+.report-preview pre { max-height: 360px; overflow: auto; margin: 18px 0 0; padding: 16px; border: 1px solid #d8e2ee; border-radius: 16px; background: #0f172a; color: #dbeafe; font: 400 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
 footer { text-align: center; color: #64748b; font-size: 12px; padding: 0 0 42px; }
 
 @media (max-width: 880px) {

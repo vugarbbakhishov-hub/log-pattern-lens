@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { analyzeLogs } from './log'
-import { buildCsvReport, buildJsonReport, reportFileName, reportMimeType } from './report'
+import { buildCsvReport, buildJsonReport, buildReportPreview, reportFileName, reportMimeType } from './report'
 
 const analysis = analyzeLogs(`2026-09-21T08:14:01Z INFO api ok request_id=req-1
 2026-09-21T08:14:04Z ERROR payment failed order_id=900012
@@ -31,6 +31,24 @@ describe('buildCsvReport', () => {
     expect(lines).toContain('Stack trace lines,2')
     expect(lines).toContain('error,2')
     expect(lines).toContain('Pattern,Count,Levels,First line,Continuation lines,Stack trace lines,Example')
+  })
+})
+
+
+describe('buildReportPreview', () => {
+  it('returns a bounded preview with a remaining line count', () => {
+    const preview = buildReportPreview(analysis, meta, 'json', 5).split('\n')
+
+    expect(preview).toHaveLength(6)
+    expect(preview[0]).toBe('{')
+    expect(preview.at(-1)).toMatch(/\.\.\. \d+ more lines/)
+  })
+
+  it('does not append a remaining count when the report fits', () => {
+    const preview = buildReportPreview(analysis, meta, 'csv', 100)
+
+    expect(preview).toContain('Source,incident.log')
+    expect(preview).not.toContain('more lines')
   })
 })
 

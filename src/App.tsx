@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react'
 import { analyzeLogs } from './log'
-import { buildCsvReport, buildJsonReport, reportFileName, reportMimeType, type ReportFormat } from './report'
+import {
+  buildCsvReport,
+  buildJsonReport,
+  buildReportPreview,
+  reportFileName,
+  reportMimeType,
+  type ReportFormat,
+} from './report'
 
 const sampleLogs = `2026-09-21T08:14:01Z INFO api request completed request_id=req-1001 user_id=4281 duration=132ms
 2026-09-21T08:14:04Z ERROR payment failed order_id=900012 code=502 trace_id=6f1a2c3d-1111-4b22-8c33-998877665544
@@ -17,18 +24,26 @@ TypeError: Cannot read properties of undefined
 function App() {
   const [logText, setLogText] = useState(sampleLogs)
   const [sourceName, setSourceName] = useState('sample-stack.log')
+  const [previewFormat, setPreviewFormat] = useState<ReportFormat>('csv')
+  const [copyStatus, setCopyStatus] = useState('')
   const analysis = useMemo(() => analyzeLogs(logText), [logText])
   const repeatedPatterns = analysis.topPatterns.filter((pattern) => pattern.count > 1)
   const primaryPattern = analysis.topPatterns[0]
+  const reportPreview = useMemo(
+    () => buildReportPreview(analysis, { source: sourceName, generatedAt: 'preview' }, previewFormat),
+    [analysis, previewFormat, sourceName],
+  )
 
   const loadSample = () => {
     setLogText(sampleLogs)
     setSourceName('sample-stack.log')
+    setCopyStatus('')
   }
 
   const clear = () => {
     setLogText('')
     setSourceName('pasted-logs.log')
+    setCopyStatus('')
   }
 
   const downloadReport = (format: ReportFormat) => {
@@ -43,6 +58,15 @@ function App() {
     link.click()
     link.remove()
     URL.revokeObjectURL(url)
+  }
+
+  const copyPreview = async () => {
+    try {
+      await navigator.clipboard.writeText(reportPreview)
+      setCopyStatus('Copied preview')
+    } catch {
+      setCopyStatus('Copy unavailable')
+    }
   }
 
   return (
@@ -89,7 +113,10 @@ function App() {
           <textarea
             aria-label="Log input"
             value={logText}
-            onChange={(event) => setLogText(event.target.value)}
+            onChange={(event) => {
+              setLogText(event.target.value)
+              setCopyStatus('')
+            }}
             spellCheck={false}
           />
           <div className="actions">
@@ -151,8 +178,8 @@ function App() {
                 <p>{pattern.examples[0]}</p>
                 <small className="pattern-meta">
                   line {pattern.firstLine}
-                  {pattern.stackTraceLines > 0 ? ` ? ${pattern.stackTraceLines} stack trace line${pattern.stackTraceLines === 1 ? '' : 's'}` : ''}
-                  {pattern.continuationLines > pattern.stackTraceLines ? ` ? ${pattern.continuationLines - pattern.stackTraceLines} folded continuation line${pattern.continuationLines - pattern.stackTraceLines === 1 ? '' : 's'}` : ''}
+                  {pattern.stackTraceLines > 0 ? ` - ${pattern.stackTraceLines} stack trace line${pattern.stackTraceLines === 1 ? '' : 's'}` : ''}
+                  {pattern.continuationLines > pattern.stackTraceLines ? ` - ${pattern.continuationLines - pattern.stackTraceLines} folded continuation line${pattern.continuationLines - pattern.stackTraceLines === 1 ? '' : 's'}` : ''}
                 </small>
               </div>
               <span>{pattern.count}x</span>
@@ -160,6 +187,29 @@ function App() {
           ))}
           {analysis.topPatterns.length === 0 && <p className="empty-state">Paste logs to see repeated patterns.</p>}
         </div>
+      </section>
+
+      <section className="report-preview panel" aria-labelledby="report-preview-title">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Report preview</p>
+            <h2 id="report-preview-title">Review before downloading</h2>
+          </div>
+          <span>{previewFormat.toUpperCase()}</span>
+        </div>
+
+        <div className="preview-toolbar" aria-label="Report preview format">
+          <button type="button" aria-pressed={previewFormat === 'csv'} onClick={() => setPreviewFormat('csv')}>
+            CSV preview
+          </button>
+          <button type="button" aria-pressed={previewFormat === 'json'} onClick={() => setPreviewFormat('json')}>
+            JSON preview
+          </button>
+          <button type="button" onClick={copyPreview}>Copy preview</button>
+          {copyStatus && <span role="status">{copyStatus}</span>}
+        </div>
+
+        <pre>{reportPreview || 'Paste logs to preview a report.'}</pre>
       </section>
 
       <footer><p>Built for quick local log review. No uploads, no analytics.</p></footer>

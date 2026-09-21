@@ -80,6 +80,23 @@ export function buildCsvReport(analysis: LogAnalysis, meta: ReportMeta): string 
   ].join('\n')
 }
 
+
+export function buildReportPreview(
+  analysis: LogAnalysis,
+  meta: ReportMeta,
+  format: ReportFormat,
+  maxLines = 18,
+): string {
+  const fullReport = format === 'csv' ? buildCsvReport(analysis, meta) : buildJsonReport(analysis, meta)
+  const lines = fullReport.trimEnd().split('\n')
+  const visibleLines = lines.slice(0, maxLines)
+  const hiddenLines = lines.length - visibleLines.length
+
+  if (hiddenLines <= 0) return visibleLines.join('\n')
+
+  return [...visibleLines, `... ${hiddenLines} more line${hiddenLines === 1 ? '' : 's'}`].join('\n')
+}
+
 export function reportFileName(source: string, format: ReportFormat): string {
   const safe = source
     .replace(/\.[^./\\]+$/, '')
