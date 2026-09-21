@@ -19,6 +19,7 @@ https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 - Fold multiline stack traces, including JavaScript, Python, Go panic and JVM-style frames, into the previous log entry instead of inflating error counts
 - Surface repeated message patterns with counts and examples
 - Preview CSV or JSON reports with visible line counts before downloading or copying a short excerpt
+- Flag possible sensitive lines such as tokens, API keys, JWTs and email addresses before sharing
 - Export a CSV or JSON triage report in the current tab
 - Responsive interface with keyboard focus states
 

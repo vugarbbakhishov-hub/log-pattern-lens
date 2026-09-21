@@ -1,4 +1,5 @@
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug' | 'trace' | 'unknown'
+export type SensitiveType = 'api-key' | 'aws-access-key' | 'bearer-token' | 'email-address' | 'jwt'
 
 export interface LogEntry {
   lineNumber: number
@@ -31,12 +32,21 @@ export interface PatternSummary {
   examples: string[]
 }
 
+export interface SensitiveFinding {
+  type: SensitiveType
+  label: string
+  count: number
+  firstLine: number
+}
+
 export interface LogAnalysis {
   totalLines: number
   parsedLines: number
   timestampedLines: number
   continuationLines: number
   stackTraceLines: number
+  sensitiveLineCount: number
+  sensitiveFindings: SensitiveFinding[]
   levelCounts: LevelCounts
   firstTimestamp?: string
   lastTimestamp?: string
@@ -57,6 +67,14 @@ const levelPatterns: Array<[LogLevel, RegExp]> = [
   ['trace', /\btrace\b/i],
 ]
 
+const sensitivePatterns: Array<{ type: SensitiveType; label: string; pattern: RegExp }> = [
+  { type: 'api-key', label: 'API key or password assignment', pattern: /\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)\s*[:=]\s*["']?[^\s"',;]+/i },
+  { type: 'aws-access-key', label: 'AWS access key ID', pattern: /\bAKIA[0-9A-Z]{16}\b/ },
+  { type: 'bearer-token', label: 'Bearer token', pattern: /\bBearer\s+[A-Za-z0-9._~+/-]+=*/i },
+  { type: 'jwt', label: 'JWT-like token', pattern: /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/ },
+  { type: 'email-address', label: 'Email address', pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i },
+]
+
 function detectTimestamp(line: string): string | undefined {
   for (const pattern of timestampPatterns) {
     const match = line.match(pattern)
@@ -70,6 +88,12 @@ function detectLevel(line: string): LogLevel {
     if (pattern.test(line)) return level
   }
   return 'unknown'
+}
+
+function detectSensitiveFindings(line: string): Array<{ type: SensitiveType; label: string }> {
+  return sensitivePatterns
+    .filter(({ pattern }) => pattern.test(line))
+    .map(({ type, label }) => ({ type, label }))
 }
 
 function stripMetadata(line: string, timestamp: string | undefined, level: LogLevel): string {
@@ -192,13 +216,35 @@ export function analyzeLogs(input: string): LogAnalysis {
   const levelCounts = emptyCounts()
   const timestamps = entries.flatMap((entry) => (entry.timestamp ? [entry.timestamp] : []))
   const patterns = new Map<string, PatternSummary>()
+  const sensitiveFindings = new Map<SensitiveType, SensitiveFinding>()
   let continuationLines = 0
   let stackTraceLines = 0
+  let sensitiveLineCount = 0
 
   for (const entry of entries) {
     levelCounts[entry.level] += 1
     continuationLines += entry.continuationLines
     stackTraceLines += entry.stackTraceLines
+
+    for (const [offset, rawLine] of entry.raw.split(/\r?\n/).entries()) {
+      const findings = detectSensitiveFindings(rawLine)
+      if (findings.length === 0) continue
+
+      sensitiveLineCount += 1
+      for (const finding of findings) {
+        const existingFinding = sensitiveFindings.get(finding.type)
+        if (existingFinding) {
+          existingFinding.count += 1
+        } else {
+          sensitiveFindings.set(finding.type, {
+            type: finding.type,
+            label: finding.label,
+            count: 1,
+            firstLine: entry.lineNumber + offset,
+          })
+        }
+      }
+    }
 
     const existing = patterns.get(entry.pattern)
     if (existing) {
@@ -228,6 +274,10 @@ export function analyzeLogs(input: string): LogAnalysis {
     timestampedLines: timestamps.length,
     continuationLines,
     stackTraceLines,
+    sensitiveLineCount,
+    sensitiveFindings: Array.from(sensitiveFindings.values()).sort(
+      (left, right) => right.count - left.count || left.firstLine - right.firstLine,
+    ),
     levelCounts,
     firstTimestamp: timestamps[0],
     lastTimestamp: timestamps.at(-1),

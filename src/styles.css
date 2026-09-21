@@ -46,9 +46,15 @@ button.primary:hover { background: #5848e8; }
 .metric-grid article { display: grid; gap: 4px; padding: 18px; border-radius: 15px; background: #f1f5f9; }
 .metric-grid strong { font-size: 30px; line-height: 1; letter-spacing: -.04em; }
 .metric-grid span { font-size: 12px; color: #64748b; }
+.metric-grid .metric-warning { background: #fff7ed; border: 1px solid #fed7aa; }
+.metric-grid .metric-warning strong { color: #c2410c; }
 .time-range { margin-top: 20px; display: grid; gap: 6px; padding: 16px; border-radius: 15px; background: #f8fafc; border: 1px solid #e2e8f0; }
 .time-range span { color: #64748b; font-size: 12px; font-weight: 700; }
 .time-range strong { font: 650 12px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+.sensitive-alert { margin-top: 20px; display: grid; gap: 8px; padding: 16px; border: 1px solid #fed7aa; border-radius: 15px; background: #fff7ed; color: #7c2d12; }
+.sensitive-alert strong { font-size: 14px; }
+.sensitive-alert span { color: #9a3412; font-size: 12px; line-height: 1.5; }
+.sensitive-alert ul { margin: 4px 0 0; padding-left: 18px; color: #9a3412; font-size: 12px; line-height: 1.5; }
 .level-list { margin-top: 20px; display: grid; gap: 11px; }
 .level-list div { display: grid; grid-template-columns: 72px 1fr 36px; gap: 10px; align-items: center; }
 .level-list span { color: #475569; font: 650 11px/1 ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; }

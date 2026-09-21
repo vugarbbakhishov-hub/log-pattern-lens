@@ -39,10 +39,12 @@ export function buildJsonReport(analysis: LogAnalysis, meta: ReportMeta): string
         timestampedLines: analysis.timestampedLines,
         continuationLines: analysis.continuationLines,
         stackTraceLines: analysis.stackTraceLines,
+        sensitiveLineCount: analysis.sensitiveLineCount,
         firstTimestamp: analysis.firstTimestamp,
         lastTimestamp: analysis.lastTimestamp,
       },
       levelCounts: analysis.levelCounts,
+      sensitiveFindings: analysis.sensitiveFindings,
       topPatterns: analysis.topPatterns,
     },
     null,
@@ -60,12 +62,17 @@ export function buildCsvReport(analysis: LogAnalysis, meta: ReportMeta): string 
     ['Timestamped entries', analysis.timestampedLines],
     ['Continuation lines', analysis.continuationLines],
     ['Stack trace lines', analysis.stackTraceLines],
+    ['Possible sensitive lines', analysis.sensitiveLineCount],
     ['First timestamp', analysis.firstTimestamp ?? ''],
     ['Last timestamp', analysis.lastTimestamp ?? ''],
   ]
   const levelRows = [
     ['Level', 'Count'],
     ...levels.map((level) => [level, analysis.levelCounts[level]]),
+  ]
+  const sensitiveRows = [
+    ['Sensitive finding', 'Count', 'First line'],
+    ...analysis.sensitiveFindings.map((finding) => [finding.label, finding.count, finding.firstLine]),
   ]
   const patternRows = [
     ['Pattern', 'Count', 'Levels', 'First line', 'Continuation lines', 'Stack trace lines', 'Example'],
@@ -84,6 +91,8 @@ export function buildCsvReport(analysis: LogAnalysis, meta: ReportMeta): string 
     ...summary.map(row),
     '',
     ...levelRows.map(row),
+    '',
+    ...sensitiveRows.map(row),
     '',
     ...patternRows.map(row),
   ].join('\n')

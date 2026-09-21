@@ -140,6 +140,9 @@ function App() {
             <article><strong>{analysis.levelCounts.error}</strong><span>Errors</span></article>
             <article><strong>{analysis.stackTraceLines}</strong><span>Stack trace lines</span></article>
             <article><strong>{analysis.continuationLines}</strong><span>Folded lines</span></article>
+            <article className={analysis.sensitiveLineCount > 0 ? 'metric-warning' : undefined}>
+              <strong>{analysis.sensitiveLineCount}</strong><span>Possible sensitive lines</span>
+            </article>
             <article><strong>{analysis.levelCounts.warn}</strong><span>Warnings</span></article>
             <article><strong>{repeatedPatterns.length}</strong><span>Repeated patterns</span></article>
           </div>
@@ -148,6 +151,20 @@ function App() {
             <span>Observed range</span>
             <strong>{analysis.firstTimestamp && analysis.lastTimestamp ? `${analysis.firstTimestamp} -> ${analysis.lastTimestamp}` : 'No timestamps detected'}</strong>
           </div>
+
+          {analysis.sensitiveFindings.length > 0 && (
+            <div className="sensitive-alert" role="status">
+              <strong>Review before sharing</strong>
+              <span>Possible sensitive values were detected. Remove or mask them before sending logs to someone else.</span>
+              <ul>
+                {analysis.sensitiveFindings.map((finding) => (
+                  <li key={finding.type}>
+                    {finding.label}: {finding.count} occurrence{finding.count === 1 ? '' : 's'}, first seen on line {finding.firstLine}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="level-list">
             {Object.entries(analysis.levelCounts).map(([level, count]) => (

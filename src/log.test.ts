@@ -72,6 +72,27 @@ Exception in thread "main" java.lang.IllegalStateException: payment state missin
     })
   })
 
+
+  it('detects possible sensitive values without storing raw secrets in findings', () => {
+    const analysis = analyzeLogs(`2026-09-21T08:14:01Z INFO login email=user@example.com
+2026-09-21T08:14:02Z WARN request api_key=sk_live_12345
+2026-09-21T08:14:03Z ERROR auth failed Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature
+2026-09-21T08:14:04Z DEBUG aws key AKIA1234567890ABCDEF`)
+
+    expect(analysis.sensitiveLineCount).toBe(4)
+    expect(analysis.sensitiveFindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'email-address', label: 'Email address', count: 1, firstLine: 1 }),
+        expect.objectContaining({ type: 'api-key', label: 'API key or password assignment', count: 1, firstLine: 2 }),
+        expect.objectContaining({ type: 'bearer-token', label: 'Bearer token', count: 1, firstLine: 3 }),
+        expect.objectContaining({ type: 'jwt', label: 'JWT-like token', count: 1, firstLine: 3 }),
+        expect.objectContaining({ type: 'aws-access-key', label: 'AWS access key ID', count: 1, firstLine: 4 }),
+      ]),
+    )
+    expect(JSON.stringify(analysis.sensitiveFindings)).not.toContain('sk_live_12345')
+    expect(JSON.stringify(analysis.sensitiveFindings)).not.toContain('user@example.com')
+  })
+
 })
 
 describe('normalizePattern', () => {
