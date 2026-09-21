@@ -6,6 +6,8 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-21
+
 ### Added
 
 - Multiline stack trace folding so JavaScript, Python, Go panic and JVM-style continuation frames stay attached to the previous log entry.
@@ -24,5 +26,6 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Tests for log parsing, pattern normalization and report generation.
 - GitHub Actions CI and GitHub Pages deployment workflow.
 
-[Unreleased]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.1.0
