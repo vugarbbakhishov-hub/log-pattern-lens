@@ -1,14 +1,14 @@
 # Log Pattern Lens
 
+[![CI](https://github.com/vugarbbakhishov-hub/log-pattern-lens/actions/workflows/ci.yml/badge.svg)](https://github.com/vugarbbakhishov-hub/log-pattern-lens/actions/workflows/ci.yml) [![Deploy GitHub Pages](https://github.com/vugarbbakhishov-hub/log-pattern-lens/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/vugarbbakhishov-hub/log-pattern-lens/actions/workflows/deploy-pages.yml)
+
 Log Pattern Lens is a browser-only React and TypeScript utility for quick log triage. Paste a log excerpt, then review level counts, repeated message patterns, timestamp coverage and the observed time range. Reports can be saved as CSV or JSON without uploading the log contents anywhere.
 
 ## Live demo
 
-The project is ready for GitHub Pages at:
+The project is published with GitHub Pages:
 
-```text
 https://vugarbbakhishov-hub.github.io/log-pattern-lens/
-```
 
 ## Features
 
