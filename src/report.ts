@@ -1,0 +1,87 @@
+import type { LogAnalysis, LogLevel } from './log'
+
+export type ReportFormat = 'csv' | 'json'
+
+export interface ReportMeta {
+  source: string
+  generatedAt: string
+}
+
+function escapeCsv(value: string | number): string {
+  const text = String(value)
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+}
+
+function row(values: Array<string | number>): string {
+  return values.map(escapeCsv).join(',')
+}
+
+const levels: LogLevel[] = ['error', 'warn', 'info', 'debug', 'trace', 'unknown']
+
+export function buildJsonReport(analysis: LogAnalysis, meta: ReportMeta): string {
+  return `${JSON.stringify(
+    {
+      tool: 'log-pattern-lens',
+      source: meta.source,
+      generatedAt: meta.generatedAt,
+      summary: {
+        totalLines: analysis.totalLines,
+        parsedLines: analysis.parsedLines,
+        timestampedLines: analysis.timestampedLines,
+        firstTimestamp: analysis.firstTimestamp,
+        lastTimestamp: analysis.lastTimestamp,
+      },
+      levelCounts: analysis.levelCounts,
+      topPatterns: analysis.topPatterns,
+    },
+    null,
+    2,
+  )}\n`
+}
+
+export function buildCsvReport(analysis: LogAnalysis, meta: ReportMeta): string {
+  const summary = [
+    ['Log Pattern Lens report'],
+    ['Source', meta.source],
+    ['Generated', meta.generatedAt],
+    ['Total lines', analysis.totalLines],
+    ['Parsed lines', analysis.parsedLines],
+    ['Timestamped lines', analysis.timestampedLines],
+    ['First timestamp', analysis.firstTimestamp ?? ''],
+    ['Last timestamp', analysis.lastTimestamp ?? ''],
+  ]
+  const levelRows = [
+    ['Level', 'Count'],
+    ...levels.map((level) => [level, analysis.levelCounts[level]]),
+  ]
+  const patternRows = [
+    ['Pattern', 'Count', 'Levels', 'First line', 'Example'],
+    ...analysis.topPatterns.map((pattern) => [
+      pattern.pattern,
+      pattern.count,
+      pattern.levels.join(' | '),
+      pattern.firstLine,
+      pattern.examples[0] ?? '',
+    ]),
+  ]
+
+  return [
+    ...summary.map(row),
+    '',
+    ...levelRows.map(row),
+    '',
+    ...patternRows.map(row),
+  ].join('\n')
+}
+
+export function reportFileName(source: string, format: ReportFormat): string {
+  const safe = source
+    .replace(/\.[^./\\]+$/, '')
+    .replace(/[^\w.-]+/g, '-')
+    .replace(/^[-.]+|[-.]+$/g, '')
+  return `${safe || 'logs'}-patterns.${format}`
+}
+
+export function reportMimeType(format: ReportFormat): string {
+  return format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8'
+}
