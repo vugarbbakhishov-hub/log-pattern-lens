@@ -39,6 +39,11 @@ export interface SensitiveFinding {
   firstLine: number
 }
 
+export interface RedactionResult {
+  text: string
+  replacementCount: number
+}
+
 export interface LogAnalysis {
   totalLines: number
   parsedLines: number
@@ -68,12 +73,43 @@ const levelPatterns: Array<[LogLevel, RegExp]> = [
 ]
 
 const sensitivePatterns: Array<{ type: SensitiveType; label: string; pattern: RegExp }> = [
-  { type: 'api-key', label: 'API key or password assignment', pattern: /\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)\s*[:=]\s*["']?[^\s"',;]+/i },
+  { type: 'api-key', label: 'API key or password assignment', pattern: /\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)\s*[:=]\s*["']?(?!\[REDACTED\])[^\s"',;]+/i },
   { type: 'aws-access-key', label: 'AWS access key ID', pattern: /\bAKIA[0-9A-Z]{16}\b/ },
   { type: 'bearer-token', label: 'Bearer token', pattern: /\bBearer\s+[A-Za-z0-9._~+/-]+=*/i },
   { type: 'jwt', label: 'JWT-like token', pattern: /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/ },
   { type: 'email-address', label: 'Email address', pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i },
 ]
+
+export function redactSensitiveValues(input: string): RedactionResult {
+  let text = input
+  let replacementCount = 0
+
+  text = text.replace(
+    /(\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)\s*[:=]\s*)(["']?)([^\s"',;]+)\2/gi,
+    (_match, prefix: string, quote: string) => {
+      replacementCount += 1
+      return `${prefix}${quote}[REDACTED]${quote}`
+    },
+  )
+  text = text.replace(/(\bBearer\s+)[A-Za-z0-9._~+/-]+=*/gi, (_match, prefix: string) => {
+    replacementCount += 1
+    return `${prefix}[REDACTED]`
+  })
+  text = text.replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, () => {
+    replacementCount += 1
+    return '[REDACTED]'
+  })
+  text = text.replace(/\bAKIA[0-9A-Z]{16}\b/g, () => {
+    replacementCount += 1
+    return '[REDACTED]'
+  })
+  text = text.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, () => {
+    replacementCount += 1
+    return '[REDACTED]'
+  })
+
+  return { text, replacementCount }
+}
 
 function detectTimestamp(line: string): string | undefined {
   for (const pattern of timestampPatterns) {

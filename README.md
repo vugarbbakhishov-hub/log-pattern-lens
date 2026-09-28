@@ -22,6 +22,7 @@ https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 - Surface repeated message patterns with counts and examples
 - Preview CSV or JSON reports with visible line counts before downloading or copying a short excerpt
 - Flag possible sensitive lines such as tokens, API keys, JWTs and email addresses before sharing
+- Mask detected sensitive values locally while preserving the surrounding log structure
 - Export a CSV or JSON triage report in the current tab
 - Responsive interface with keyboard focus states
 
@@ -42,11 +43,11 @@ npm run lint
 npm run build
 ```
 
-The tests cover local file validation, level detection, timestamp extraction, multiline stack trace folding across common runtimes, pattern normalization, repeated pattern counts, JSON reports, CSV reports and safe report file names.
+The tests cover local file validation, sensitive-value masking, level detection, timestamp extraction, multiline stack trace folding across common runtimes, pattern normalization, repeated pattern counts, JSON reports, CSV reports and safe report file names.
 
 ## Privacy
 
-The app has no backend, analytics or upload endpoint. Log text is processed in the current browser tab. Remove secrets, tokens, customer data and personal data before sharing samples in issues.
+The app has no backend, analytics or upload endpoint. Log text is processed in the current browser tab. Automatic detection and masking are best-effort safeguards, so review the result and remove secrets, tokens, customer data and personal data before sharing samples in issues.
 
 ## Scope
 

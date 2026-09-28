@@ -1,6 +1,6 @@
 import { useMemo, useState, type ChangeEvent } from 'react'
 import { validateLogFile } from './file'
-import { analyzeLogs } from './log'
+import { analyzeLogs, redactSensitiveValues } from './log'
 import {
   buildCsvReport,
   buildJsonReport,
@@ -64,6 +64,7 @@ function App() {
   const [previewFormat, setPreviewFormat] = useState<ReportFormat>('csv')
   const [copyStatus, setCopyStatus] = useState('')
   const [fileStatus, setFileStatus] = useState('')
+  const [privacyStatus, setPrivacyStatus] = useState('')
   const analysis = useMemo(() => analyzeLogs(logText), [logText])
   const repeatedPatterns = analysis.topPatterns.filter((pattern) => pattern.count > 1)
   const primaryPattern = analysis.topPatterns[0]
@@ -77,6 +78,7 @@ function App() {
     setSourceName(sample.fileName)
     setCopyStatus('')
     setFileStatus('')
+    setPrivacyStatus('')
   }
 
   const clear = () => {
@@ -84,6 +86,7 @@ function App() {
     setSourceName('pasted-logs.log')
     setCopyStatus('')
     setFileStatus('')
+    setPrivacyStatus('')
   }
 
   const openLogFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -103,10 +106,21 @@ function App() {
       setLogText(contents)
       setSourceName(file.name)
       setCopyStatus('')
+      setPrivacyStatus('')
       setFileStatus(`Opened ${file.name} locally (${contents.length.toLocaleString()} characters)`)
     } catch {
       setFileStatus('The browser could not read that file.')
     }
+  }
+
+  const maskSensitiveValues = () => {
+    const result = redactSensitiveValues(logText)
+
+    setLogText(result.text)
+    setCopyStatus('')
+    setPrivacyStatus(
+      `Masked ${result.replacementCount} sensitive value${result.replacementCount === 1 ? '' : 's'} locally`,
+    )
   }
 
   const downloadReport = (format: ReportFormat) => {
@@ -193,6 +207,7 @@ function App() {
             onChange={(event) => {
               setLogText(event.target.value)
               setCopyStatus('')
+              setPrivacyStatus('')
             }}
             spellCheck={false}
           />
@@ -250,8 +265,12 @@ function App() {
                   </li>
                 ))}
               </ul>
+              <button className="mask-sensitive" type="button" onClick={maskSensitiveValues}>
+                Mask sensitive values
+              </button>
             </div>
           )}
+          {privacyStatus && <p className="privacy-status" role="status">{privacyStatus}</p>}
 
           <div className="level-list">
             {Object.entries(analysis.levelCounts).map(([level, count]) => (

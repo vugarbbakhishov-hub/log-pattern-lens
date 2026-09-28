@@ -66,6 +66,9 @@ button.primary:hover { background: #5848e8; }
 .sensitive-alert strong { font-size: 14px; }
 .sensitive-alert span { color: #9a3412; font-size: 12px; line-height: 1.5; }
 .sensitive-alert ul { margin: 4px 0 0; padding-left: 18px; color: #9a3412; font-size: 12px; line-height: 1.5; }
+.sensitive-alert .mask-sensitive { justify-self: start; border-color: #fdba74; background: #fff; color: #9a3412; }
+.sensitive-alert .mask-sensitive:hover { background: #ffedd5; }
+.privacy-status { margin: 12px 0 0; color: #08795f; font-size: 12px; font-weight: 800; }
 .level-list { margin-top: 20px; display: grid; gap: 11px; }
 .level-list div { display: grid; grid-template-columns: 72px 1fr 36px; gap: 10px; align-items: center; }
 .level-list span { color: #475569; font: 650 11px/1 ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; }

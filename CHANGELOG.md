@@ -10,6 +10,7 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 - Local `.log`, `.txt`, `.out` and `.json` file opening with a 2 MB browser safety limit.
 - A keyboard-focusable, labelled report preview for easier screen-reader and keyboard review.
+- One-click local masking for detected API keys, passwords, bearer tokens, JWTs, AWS access keys and email addresses.
 
 ## [0.2.0] - 2026-09-21
 

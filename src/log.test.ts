@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyzeLogs, normalizePattern, parseLogLines } from './log'
+import { analyzeLogs, normalizePattern, parseLogLines, redactSensitiveValues } from './log'
 
 describe('parseLogLines', () => {
   it('detects timestamps, levels and normalized message patterns', () => {
@@ -100,6 +100,35 @@ describe('normalizePattern', () => {
     expect(normalizePattern('GET /users/12345 failed from 10.2.0.4 in 812ms')).toBe(
       'GET /users/<number> failed from <ip> in <duration>',
     )
+  })
+})
+
+describe('redactSensitiveValues', () => {
+  it('masks supported sensitive values while preserving log structure', () => {
+    const input = `INFO login email=user@example.com
+WARN request api_key=sk_live_12345
+ERROR auth failed Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature
+DEBUG aws key AKIA1234567890ABCDEF
+INFO config password="super-secret"`
+
+    const result = redactSensitiveValues(input)
+
+    expect(result.replacementCount).toBe(5)
+    expect(result.text.split('\n')).toHaveLength(5)
+    expect(result.text).toContain('email=[REDACTED]')
+    expect(result.text).toContain('api_key=[REDACTED]')
+    expect(result.text).toContain('Authorization: Bearer [REDACTED]')
+    expect(result.text).toContain('password="[REDACTED]"')
+    expect(result.text).not.toContain('user@example.com')
+    expect(result.text).not.toContain('sk_live_12345')
+    expect(result.text).not.toContain('AKIA1234567890ABCDEF')
+    expect(analyzeLogs(result.text).sensitiveLineCount).toBe(0)
+  })
+
+  it('leaves ordinary log text unchanged', () => {
+    const input = '2026-09-28T10:00:00Z INFO worker completed duration=120ms'
+
+    expect(redactSensitiveValues(input)).toEqual({ text: input, replacementCount: 0 })
   })
 })
 
