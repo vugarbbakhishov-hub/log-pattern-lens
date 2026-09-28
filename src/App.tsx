@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ChangeEvent } from 'react'
+import { validateLogFile } from './file'
 import { analyzeLogs } from './log'
 import {
   buildCsvReport,
@@ -62,6 +63,7 @@ function App() {
   const [sourceName, setSourceName] = useState(defaultSample.fileName)
   const [previewFormat, setPreviewFormat] = useState<ReportFormat>('csv')
   const [copyStatus, setCopyStatus] = useState('')
+  const [fileStatus, setFileStatus] = useState('')
   const analysis = useMemo(() => analyzeLogs(logText), [logText])
   const repeatedPatterns = analysis.topPatterns.filter((pattern) => pattern.count > 1)
   const primaryPattern = analysis.topPatterns[0]
@@ -74,12 +76,37 @@ function App() {
     setLogText(sample.contents)
     setSourceName(sample.fileName)
     setCopyStatus('')
+    setFileStatus('')
   }
 
   const clear = () => {
     setLogText('')
     setSourceName('pasted-logs.log')
     setCopyStatus('')
+    setFileStatus('')
+  }
+
+  const openLogFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+
+    if (!file) return
+
+    const validationMessage = validateLogFile(file)
+    if (validationMessage) {
+      setFileStatus(validationMessage)
+      return
+    }
+
+    try {
+      const contents = await file.text()
+      setLogText(contents)
+      setSourceName(file.name)
+      setCopyStatus('')
+      setFileStatus(`Opened ${file.name} locally (${contents.length.toLocaleString()} characters)`)
+    } catch {
+      setFileStatus('The browser could not read that file.')
+    }
   }
 
   const downloadReport = (format: ReportFormat) => {
@@ -172,9 +199,19 @@ function App() {
           <div className="actions">
             <button className="primary" type="button" onClick={() => loadSample(defaultSample)}>Reset sample</button>
             <button type="button" onClick={clear}>Clear</button>
+            <input
+              className="file-input"
+              id="log-file-input"
+              type="file"
+              accept=".log,.txt,.out,.json,text/plain,application/json"
+              onChange={openLogFile}
+            />
+            <label className="file-picker" htmlFor="log-file-input">Open local file</label>
             <button type="button" onClick={() => downloadReport('csv')}>Download CSV report</button>
             <button type="button" onClick={() => downloadReport('json')}>Download JSON report</button>
           </div>
+          <p className="file-help">Files stay in this tab. Supported: .log, .txt, .out and .json, up to 2 MB.</p>
+          {fileStatus && <p className="file-status" role="status">{fileStatus}</p>}
         </div>
 
         <div className="panel results-panel" aria-live="polite">
@@ -281,7 +318,9 @@ function App() {
           {copyStatus && <span role="status">{copyStatus}</span>}
         </div>
 
-        <pre>{reportPreview.text || 'Paste logs to preview a report.'}</pre>
+        <pre tabIndex={0} aria-label={`${previewFormat.toUpperCase()} report preview`}>
+          {reportPreview.text || 'Paste logs to preview a report.'}
+        </pre>
       </section>
 
       <footer><p>Built for quick local log review. No uploads, no analytics.</p></footer>

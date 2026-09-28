@@ -13,6 +13,7 @@ https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 ## Features
 
 - Paste logs directly into the browser
+- Open `.log`, `.txt`, `.out` and `.json` files locally with a 2 MB browser safety limit
 - Detect `error`, `warn`, `info`, `debug`, `trace` and unknown lines
 - Detect common ISO and time-only timestamps
 - Normalize volatile values such as UUIDs, IP addresses, long IDs and durations
@@ -41,7 +42,7 @@ npm run lint
 npm run build
 ```
 
-The tests cover level detection, timestamp extraction, multiline stack trace folding across common runtimes, pattern normalization, repeated pattern counts, JSON reports, CSV reports and safe report file names.
+The tests cover local file validation, level detection, timestamp extraction, multiline stack trace folding across common runtimes, pattern normalization, repeated pattern counts, JSON reports, CSV reports and safe report file names.
 
 ## Privacy
 

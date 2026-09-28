@@ -6,6 +6,11 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+- Local `.log`, `.txt`, `.out` and `.json` file opening with a 2 MB browser safety limit.
+- A keyboard-focusable, labelled report preview for easier screen-reader and keyboard review.
+
 ## [0.2.0] - 2026-09-21
 
 ### Added
