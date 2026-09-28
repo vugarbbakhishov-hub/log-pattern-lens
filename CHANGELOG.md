@@ -6,6 +6,8 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-28
+
 ### Added
 
 - Local `.log`, `.txt`, `.out` and `.json` file opening with a 2 MB browser safety limit.
@@ -32,6 +34,7 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Tests for log parsing, pattern normalization and report generation.
 - GitHub Actions CI and GitHub Pages deployment workflow.
 
-[Unreleased]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.1.0
