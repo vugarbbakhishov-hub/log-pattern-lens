@@ -1,5 +1,5 @@
 import { useMemo, useState, type ChangeEvent } from 'react'
-import { validateLogFile } from './file'
+import { createFileReadGuard, validateLogFile } from './file'
 import { analyzeLogs, redactSensitiveValues } from './log'
 import {
   buildCsvReport,
@@ -59,6 +59,7 @@ TypeError: Cannot read properties of undefined
 const defaultSample = logSamples[0]
 
 function App() {
+  const [fileRead] = useState(createFileReadGuard)
   const [logText, setLogText] = useState(defaultSample.contents)
   const [sourceName, setSourceName] = useState(defaultSample.fileName)
   const [previewFormat, setPreviewFormat] = useState<ReportFormat>('csv')
@@ -74,6 +75,7 @@ function App() {
   )
 
   const loadSample = (sample: LogSample) => {
+    fileRead.cancel()
     setLogText(sample.contents)
     setSourceName(sample.fileName)
     setCopyStatus('')
@@ -82,6 +84,7 @@ function App() {
   }
 
   const clear = () => {
+    fileRead.cancel()
     setLogText('')
     setSourceName('pasted-logs.log')
     setCopyStatus('')
@@ -95,25 +98,28 @@ function App() {
 
     if (!file) return
 
+    fileRead.cancel()
     const validationMessage = validateLogFile(file)
     if (validationMessage) {
       setFileStatus(validationMessage)
       return
     }
 
-    try {
-      const contents = await file.text()
+    setFileStatus(`Reading ${file.name} locally…`)
+    await fileRead.read(file, (contents) => {
       setLogText(contents)
       setSourceName(file.name)
       setCopyStatus('')
       setPrivacyStatus('')
       setFileStatus(`Opened ${file.name} locally (${contents.length.toLocaleString()} characters)`)
-    } catch {
+    }, () => {
       setFileStatus('The browser could not read that file.')
-    }
+    })
   }
 
   const maskSensitiveValues = () => {
+    fileRead.cancel()
+    setFileStatus('')
     const result = redactSensitiveValues(logText)
 
     setLogText(result.text)
@@ -183,7 +189,12 @@ function App() {
               aria-label="Source name"
               className="source-name"
               value={sourceName}
-              onChange={(event) => setSourceName(event.target.value)}
+              onChange={(event) => {
+                fileRead.cancel()
+                setFileStatus('')
+                setCopyStatus('')
+                setSourceName(event.target.value)
+              }}
             />
           </div>
 
@@ -205,6 +216,8 @@ function App() {
             aria-label="Log input"
             value={logText}
             onChange={(event) => {
+              fileRead.cancel()
+              setFileStatus('')
               setLogText(event.target.value)
               setCopyStatus('')
               setPrivacyStatus('')

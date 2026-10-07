@@ -6,6 +6,13 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+
+- Ignore late file reads after selecting another file (including an invalid
+  selection), clearing, loading a sample, editing the input/source or masking
+  sensitive values. Old results and errors cannot overwrite the newer action.
+- Show which file is being read and clear outdated file status on manual edits.
+
 ## [0.3.0] - 2026-09-28
 
 ### Added
