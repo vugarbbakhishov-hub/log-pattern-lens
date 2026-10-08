@@ -72,8 +72,19 @@ const levelPatterns: Array<[LogLevel, RegExp]> = [
   ['trace', /\btrace\b/i],
 ]
 
+// Match whole quoted values, including escaped quotes; never consume a new log line.
+const assignmentPattern = /(\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)["']?[ \t]*[:=][ \t]*)("(?:\\[^\r\n]|[^"\\\r\n])*"|'(?:\\[^\r\n]|[^'\\\r\n])*'|\[REDACTED\]|[^\s"',;}\]]+)/gi
+
+function assignmentValue(value: string): string {
+  return value.startsWith('"') || value.startsWith("'") ? value.slice(1, -1) : value
+}
+
+function needsMasking(value: string): boolean {
+  const contents = assignmentValue(value)
+  return contents.length > 0 && contents !== '[REDACTED]'
+}
+
 const sensitivePatterns: Array<{ type: SensitiveType; label: string; pattern: RegExp }> = [
-  { type: 'api-key', label: 'API key or password assignment', pattern: /\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)\s*[:=]\s*["']?(?!\[REDACTED\])[^\s"',;]+/i },
   { type: 'aws-access-key', label: 'AWS access key ID', pattern: /\bAKIA[0-9A-Z]{16}\b/ },
   { type: 'bearer-token', label: 'Bearer token', pattern: /\bBearer\s+[A-Za-z0-9._~+/-]+=*/i },
   { type: 'jwt', label: 'JWT-like token', pattern: /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/ },
@@ -85,8 +96,10 @@ export function redactSensitiveValues(input: string): RedactionResult {
   let replacementCount = 0
 
   text = text.replace(
-    /(\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)\s*[:=]\s*)(["']?)([^\s"',;]+)\2/gi,
-    (_match, prefix: string, quote: string) => {
+    assignmentPattern,
+    (match, prefix: string, value: string) => {
+      if (!needsMasking(value)) return match
+      const quote = value.startsWith('"') || value.startsWith("'") ? value[0] : ''
       replacementCount += 1
       return `${prefix}${quote}[REDACTED]${quote}`
     },
@@ -127,9 +140,13 @@ function detectLevel(line: string): LogLevel {
 }
 
 function detectSensitiveFindings(line: string): Array<{ type: SensitiveType; label: string }> {
-  return sensitivePatterns
+  const findings: Array<{ type: SensitiveType; label: string }> = sensitivePatterns
     .filter(({ pattern }) => pattern.test(line))
     .map(({ type, label }) => ({ type, label }))
+  if ([...line.matchAll(assignmentPattern)].some((match) => needsMasking(match[2]))) {
+    findings.unshift({ type: 'api-key', label: 'API key or password assignment' })
+  }
+  return findings
 }
 
 function stripMetadata(line: string, timestamp: string | undefined, level: LogLevel): string {

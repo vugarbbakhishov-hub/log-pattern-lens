@@ -104,6 +104,25 @@ describe('normalizePattern', () => {
 })
 
 describe('redactSensitiveValues', () => {
+  it.each([
+    ['password="two word secret"', 'password="[REDACTED]"'],
+    ["password='two word secret'", "password='[REDACTED]'"],
+    ['{"password": "two word secret", "status": "ok"}', '{"password": "[REDACTED]", "status": "ok"}'],
+    ['{"token":"fake\\"quoted value"}', '{"token":"[REDACTED]"}'],
+    ['{"access_token":fake_value}', '{"access_token":[REDACTED]}'],
+  ])('detects and completely masks %s', (input, expected) => {
+    expect(analyzeLogs(input).sensitiveLineCount).toBe(1)
+    expect(redactSensitiveValues(input)).toEqual({ text: expected, replacementCount: 1 })
+    expect(analyzeLogs(expected).sensitiveLineCount).toBe(0)
+    expect(redactSensitiveValues(expected)).toEqual({ text: expected, replacementCount: 0 })
+  })
+
+  it('does not count empty assignments or cross into the next log line', () => {
+    const input = 'password=""\ntoken=\nINFO completed'
+    expect(redactSensitiveValues(input)).toEqual({ text: input, replacementCount: 0 })
+    expect(analyzeLogs(input).sensitiveLineCount).toBe(0)
+  })
+
   it('masks supported sensitive values while preserving log structure', () => {
     const input = `INFO login email=user@example.com
 WARN request api_key=sk_live_12345

@@ -8,6 +8,10 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
+- Detect and mask JSON-style credential assignments and complete quoted values
+  containing spaces or escaped quotes. Empty assignments no longer consume text
+  from the next line, and masking an already masked assignment counts no change.
+
 - Ignore late file reads after selecting another file (including an invalid
   selection), clearing, loading a sample, editing the input/source or masking
   sensitive values. Old results and errors cannot overwrite the newer action.

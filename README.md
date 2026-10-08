@@ -23,6 +23,7 @@ https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 - Preview CSV or JSON reports with visible line counts before downloading or copying a short excerpt
 - Flag possible sensitive lines such as tokens, API keys, JWTs and email addresses before sharing
 - Mask detected sensitive values locally while preserving the surrounding log structure
+- Mask credential assignments in JSON-style logs and quoted values containing spaces or escaped quotes
 - Export a CSV or JSON triage report in the current tab
 - Responsive interface with keyboard focus states
 

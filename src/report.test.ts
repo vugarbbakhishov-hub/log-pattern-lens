@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyzeLogs } from './log'
+import { analyzeLogs, redactSensitiveValues } from './log'
 import {
   buildCsvReport,
   buildJsonReport,
@@ -15,6 +15,18 @@ TypeError: Cannot read properties of undefined
     at chargeCustomer (checkout.ts:42:7)
 2026-09-21T08:14:05Z ERROR payment failed order_id=900013`)
 const meta = { source: 'incident.log', generatedAt: '2026-09-21T10:00:00.000Z' }
+
+it('does not retain masked JSON credentials in exported examples or patterns', () => {
+  const input = 'INFO config {"password":"fake secret with spaces","token":"fake_token_value"}'
+  const masked = redactSensitiveValues(input)
+  expect(masked.replacementCount).toBe(2)
+  const safeAnalysis = analyzeLogs(masked.text)
+  for (const report of [buildCsvReport(safeAnalysis, meta), buildJsonReport(safeAnalysis, meta)]) {
+    expect(report).not.toContain('fake secret with spaces')
+    expect(report).not.toContain('fake_token_value')
+  }
+  expect(safeAnalysis.sensitiveLineCount).toBe(0)
+})
 
 describe('buildJsonReport', () => {
   it('serializes the summary, level counts and top patterns', () => {
