@@ -263,7 +263,7 @@ function App() {
           </div>
 
           <div className="time-range">
-            <span>Observed range</span>
+            <span>{analysis.timestampOrder === 'input' ? 'First / last timestamp in file order (chronology unavailable)' : 'Observed time range'}</span>
             <strong>{analysis.firstTimestamp && analysis.lastTimestamp ? `${analysis.firstTimestamp} -> ${analysis.lastTimestamp}` : 'No timestamps detected'}</strong>
           </div>
 

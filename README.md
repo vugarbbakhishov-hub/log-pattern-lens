@@ -19,6 +19,7 @@ with corrected credential masking and reliable file switching.
 - Open `.log`, `.txt`, `.out` and `.json` files locally with a 2 MB browser safety limit
 - Detect `error`, `warn`, `info`, `debug`, `trace` and unknown lines
 - Detect common ISO and time-only timestamps
+- Calculate chronological bounds for valid ISO timestamps with explicit timezones, including unsorted input and fractional seconds. If any detected timestamp lacks a date/timezone or is invalid, show first/last in file order instead. CSV and JSON reports include `timestampOrder` (`chronological`, `input`, or `none`); entries without timestamps do not participate in the range.
 - Normalize volatile values such as UUIDs, IP addresses, long IDs and durations
 - Load focused sample logs for stack traces, sensitive data review and latency bursts
 - Fold multiline stack traces, including JavaScript, Python, Go panic and JVM-style frames, into the previous log entry instead of inflating error counts

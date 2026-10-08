@@ -37,6 +37,7 @@ export function buildJsonReport(analysis: LogAnalysis, meta: ReportMeta): string
         totalLines: analysis.totalLines,
         parsedLines: analysis.parsedLines,
         timestampedLines: analysis.timestampedLines,
+        timestampOrder: analysis.timestampOrder,
         continuationLines: analysis.continuationLines,
         stackTraceLines: analysis.stackTraceLines,
         sensitiveLineCount: analysis.sensitiveLineCount,
@@ -64,6 +65,7 @@ export function buildCsvReport(analysis: LogAnalysis, meta: ReportMeta): string 
     ['Stack trace lines', analysis.stackTraceLines],
     ['Possible sensitive lines', analysis.sensitiveLineCount],
     ['First timestamp', analysis.firstTimestamp ?? ''],
+    ['Timestamp order', analysis.timestampOrder],
     ['Last timestamp', analysis.lastTimestamp ?? ''],
   ]
   const levelRows = [

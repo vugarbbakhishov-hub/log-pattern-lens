@@ -53,6 +53,8 @@ export interface LogAnalysis {
   sensitiveLineCount: number
   sensitiveFindings: SensitiveFinding[]
   levelCounts: LevelCounts
+  timestampOrder: 'chronological' | 'input' | 'none'
+  // Chronological bounds when comparable; otherwise first/last in input order.
   firstTimestamp?: string
   lastTimestamp?: string
   topPatterns: PatternSummary[]
@@ -271,6 +273,37 @@ function emptyCounts(): LevelCounts {
   return { error: 0, warn: 0, info: 0, debug: 0, trace: 0, unknown: 0 }
 }
 
+function timestampBounds(timestamps: string[]): Pick<LogAnalysis, 'firstTimestamp' | 'lastTimestamp' | 'timestampOrder'> {
+  const fallback = {
+    firstTimestamp: timestamps[0],
+    lastTimestamp: timestamps.at(-1),
+    timestampOrder: timestamps.length ? 'input' as const : 'none' as const,
+  }
+  let first: { text: string; seconds: number; fraction: string } | undefined
+  let last: typeof first
+  const compare = (a: NonNullable<typeof first>, b: NonNullable<typeof first>) => {
+    if (a.seconds !== b.seconds) return a.seconds - b.seconds
+    const width = Math.max(a.fraction.length, b.fraction.length)
+    const left = a.fraction.padEnd(width, '0')
+    const right = b.fraction.padEnd(width, '0')
+    return left < right ? -1 : left > right ? 1 : 0
+  }
+  for (const text of timestamps) {
+    const match = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:?\d{2})$/.exec(text)
+    if (!match) return fallback
+    const local = Date.parse(`${match[1]}Z`)
+    const seconds = Date.parse(`${match[1]}${match[3]}`)
+    // Reject normalized invalid dates such as February 30 and 24:00:00.
+    if (!Number.isFinite(local) || !Number.isFinite(seconds) || new Date(local).toISOString().slice(0, 19) !== match[1]) return fallback
+    const value = { text, seconds, fraction: match[2] ?? '' }
+    if (!first || compare(value, first) < 0) first = value
+    if (!last || compare(value, last) > 0) last = value
+  }
+  return first && last
+    ? { firstTimestamp: first.text, lastTimestamp: last.text, timestampOrder: 'chronological' }
+    : fallback
+}
+
 export function analyzeLogs(input: string): LogAnalysis {
   const lines = input.split(/\r?\n/)
   const entries = parseLogLines(input)
@@ -340,8 +373,7 @@ export function analyzeLogs(input: string): LogAnalysis {
       (left, right) => right.count - left.count || left.firstLine - right.firstLine,
     ),
     levelCounts,
-    firstTimestamp: timestamps[0],
-    lastTimestamp: timestamps.at(-1),
+    ...timestampBounds(timestamps),
     topPatterns: Array.from(patterns.values()).sort(
       (left, right) => right.count - left.count || left.firstLine - right.firstLine,
     ),

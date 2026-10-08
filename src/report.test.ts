@@ -16,6 +16,21 @@ TypeError: Cannot read properties of undefined
 2026-09-21T08:14:05Z ERROR payment failed order_id=900013`)
 const meta = { source: 'incident.log', generatedAt: '2026-09-21T10:00:00.000Z' }
 
+it.each([
+  ['2026-10-08T11:00:00Z INFO later\n2026-10-08T10:00:00Z INFO earlier', 'chronological', '2026-10-08T10:00:00Z', '2026-10-08T11:00:00Z'],
+  ['23:59:59 INFO first\n00:00:01 INFO last', 'input', '23:59:59', '00:00:01'],
+  ['INFO ready', 'none', undefined, undefined],
+])('exports explicit timestamp order for %s', (input, order, first, last) => {
+  const result = analyzeLogs(input)
+  expect(JSON.parse(buildJsonReport(result, meta)).summary).toMatchObject({ timestampOrder: order })
+  expect(JSON.parse(buildJsonReport(result, meta)).summary.firstTimestamp).toBe(first)
+  expect(JSON.parse(buildJsonReport(result, meta)).summary.lastTimestamp).toBe(last)
+  const csv = buildCsvReport(result, meta).split('\n')
+  expect(csv).toContain(`Timestamp order,${order}`)
+  expect(csv).toContain(`First timestamp,${first ?? ''}`)
+  expect(csv).toContain(`Last timestamp,${last ?? ''}`)
+})
+
 it('does not retain masked JSON credentials in exported examples or patterns', () => {
   const input = 'INFO config {"password":"fake secret with spaces","token":"fake_token_value"}'
   const masked = redactSensitiveValues(input)

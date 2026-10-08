@@ -6,6 +6,13 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+
+- Compute chronological timestamp bounds for unsorted timezone-qualified logs,
+  preserving fractional precision and original timestamp text. For ambiguous or
+  invalid timestamps, label first/last as file order rather than a time range.
+- Include timestamp ordering mode in CSV and JSON reports.
+
 ## [0.3.1] - 2026-10-08
 
 ### Fixed

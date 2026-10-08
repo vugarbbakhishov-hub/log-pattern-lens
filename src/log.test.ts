@@ -175,6 +175,38 @@ INFO config password="super-secret"`
 })
 
 describe('analyzeLogs', () => {
+  it('preserves sub-millisecond ordering across timezone offsets', () => {
+    const report = analyzeLogs('2026-10-08T10:00:00.0009Z INFO later\n2026-10-08T06:00:00.0001-0400 INFO earlier')
+    expect(report.firstTimestamp).toBe('2026-10-08T06:00:00.0001-0400')
+    expect(report.lastTimestamp).toBe('2026-10-08T10:00:00.0009Z')
+    expect(report.timestampOrder).toBe('chronological')
+  })
+
+  it.each(['2026-02-30T10:00:00Z', '2026-10-08T24:00:00Z', '2026-10-08T10:00:00+25:00'])('does not infer chronology for invalid timestamp %s', (timestamp) => {
+    expect(analyzeLogs(`${timestamp} INFO invalid\n2026-10-08T11:00:00Z INFO valid`).timestampOrder).toBe('input')
+  })
+
+  it('finds chronological bounds in unsorted timezone-qualified logs', () => {
+    const report = analyzeLogs('2026-10-08T10:00:00Z INFO middle\n2026-10-08T13:00:00+04:00 INFO earliest\n2026-10-08T11:00:00Z INFO latest\n2026-10-08T09:30:00Z INFO last')
+    expect(report.firstTimestamp).toBe('2026-10-08T13:00:00+04:00')
+    expect(report.lastTimestamp).toBe('2026-10-08T11:00:00Z')
+    expect(report.timestampOrder).toBe('chronological')
+  })
+
+  it.each([
+    ['23:59:59 INFO first\n00:00:01 INFO last', '23:59:59', '00:00:01'],
+    ['2026-10-08T10:00:00Z INFO first\n2026-10-08 09:00:00 INFO last', '2026-10-08T10:00:00Z', '2026-10-08 09:00:00'],
+  ])('keeps input order when timestamps cannot be compared: %s', (input, first, last) => {
+    const report = analyzeLogs(input)
+    expect(report.firstTimestamp).toBe(first)
+    expect(report.lastTimestamp).toBe(last)
+    expect(report.timestampOrder).toBe('input')
+  })
+
+  it('has no timestamp ordering when no timestamp is present', () => {
+    expect(analyzeLogs('INFO ready').timestampOrder).toBe('none')
+  })
+
   it('counts levels, timestamps and repeated patterns', () => {
     const analysis = analyzeLogs(`2026-09-21T08:14:01Z INFO api ok request_id=req-1
 2026-09-21T08:14:04Z ERROR payment failed order_id=900012
