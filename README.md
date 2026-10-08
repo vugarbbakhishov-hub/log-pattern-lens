@@ -53,6 +53,13 @@ The tests cover local file validation, sensitive-value masking, level detection,
 
 ## Privacy
 
+CSV exports prefix formula-like text cells with an apostrophe and quote them to
+reduce spreadsheet formula interpretation. This covers leading `=`, `+`, `-`,
+`@` (including full-width variants and leading whitespace), tabs and line breaks.
+The prefix becomes part of the exported data; use JSON when exact values matter.
+Spreadsheet import settings and saving/reopening CSV can change this behavior;
+this is not a universal guarantee. See [OWASP CSV Injection](https://community.owasp.org/attacks/CSV_Injection).
+
 The app has no backend, analytics or upload endpoint. Log text is processed in the current browser tab. Automatic detection and masking are best-effort safeguards, so review the result and remove secrets, tokens, customer data and personal data before sharing samples in issues.
 
 ## Scope

@@ -8,6 +8,9 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
+- Prefix and quote formula-like CSV text cells, including source names and log
+  examples. JSON retains original values; document spreadsheet import limitations.
+
 - Preserve original file line numbers for sensitive findings when multiline
   entries contain blank lines, including CSV and JSON exports.
 

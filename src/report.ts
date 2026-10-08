@@ -18,6 +18,10 @@ export interface ReportPreview {
 
 function escapeCsv(value: string | number): string {
   const text = String(value)
+  // CSV quoting alone does not keep spreadsheet importers from reading formulas.
+  if (typeof value === 'string' && (/^[\t\r\n]/.test(text) || /^\s*[=+\-@＝＋－＠]/u.test(text))) {
+    return `"'${text.replace(/"/g, '""')}"`
+  }
   return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
 }
 

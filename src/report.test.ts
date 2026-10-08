@@ -64,6 +64,28 @@ describe('buildJsonReport', () => {
 })
 
 describe('buildCsvReport', () => {
+  it.each(['=1+1', '+1+1', '-1+1', '@SUM(1)', '  =1+1', '\tvalue', '\rvalue', '\nvalue', '＝1+1'])('prefixes formula-like text %j without changing JSON', (value) => {
+    const result = analyzeLogs('INFO ready')
+    result.topPatterns[0].pattern = value
+    result.topPatterns[0].examples = [value]
+    const metadata = { source: value, generatedAt: value }
+    const cell = `"'${value.replace(/"/g, '""')}"`
+    const csv = buildCsvReport(result, metadata)
+    expect(csv).toContain(`Source,${cell}\nGenerated,${cell}\n`)
+    expect(csv).toContain(`${cell},1,info,1,0,0,${cell}`)
+    const json = JSON.parse(buildJsonReport(result, metadata))
+    expect(json.source).toBe(value)
+    expect(json.topPatterns[0].pattern).toBe(value)
+    expect(json.topPatterns[0].examples).toEqual([value])
+  })
+
+  it('quotes commas, double quotes and multiline examples while leaving numeric counts intact', () => {
+    const result = analyzeLogs('INFO ready')
+    result.topPatterns[0].examples = ['message, "quoted"\nsecond line']
+    expect(buildCsvReport(result, { ...meta, source: 'prod, "east".log' })).toContain('Source,"prod, ""east"".log"')
+    expect(buildCsvReport(result, meta)).toContain('ready,1,info,1,0,0,"message, ""quoted""\nsecond line"')
+  })
+
   it('keeps summary, level counts and patterns in readable blocks', () => {
     const lines = buildCsvReport(analysis, meta).split('\n')
 
