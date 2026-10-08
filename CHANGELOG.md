@@ -8,6 +8,10 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
+- Mask truncated quoted credential values through the end of their line,
+  preserving missing closing quotes and line breaks. A bare `Bearer` no longer
+  consumes the next line, and a redaction marker followed by a suffix is masked.
+
 - Detect and mask JSON-style credential assignments and complete quoted values
   containing spaces or escaped quotes. Empty assignments no longer consume text
   from the next line, and masking an already masked assignment counts no change.

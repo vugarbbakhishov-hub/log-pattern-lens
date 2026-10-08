@@ -73,10 +73,18 @@ const levelPatterns: Array<[LogLevel, RegExp]> = [
 ]
 
 // Match whole quoted values, including escaped quotes; never consume a new log line.
-const assignmentPattern = /(\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)["']?[ \t]*[:=][ \t]*)("(?:\\[^\r\n]|[^"\\\r\n])*"|'(?:\\[^\r\n]|[^'\\\r\n])*'|\[REDACTED\]|[^\s"',;}\]]+)/gi
+const assignmentPattern = /(\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|passwd|pwd|secret|token)["']?[ \t]*[:=][ \t]*)("(?:\\[^\r\n]|[^"\\\r\n])*(?:"|\\?(?=[\r\n]|$))|'(?:\\[^\r\n]|[^'\\\r\n])*(?:'|\\?(?=[\r\n]|$))|\[REDACTED\][^\s"',;}\]]*|[^\s"',;}\]]+)/gi
+
+function hasClosingQuote(value: string): boolean {
+  if (value.length < 2 || !value.endsWith(value[0])) return false
+  const backslashes = value.slice(0, -1).match(/\\*$/)?.[0].length ?? 0
+  return backslashes % 2 === 0
+}
 
 function assignmentValue(value: string): string {
-  return value.startsWith('"') || value.startsWith("'") ? value.slice(1, -1) : value
+  return value.startsWith('"') || value.startsWith("'")
+    ? value.slice(1, hasClosingQuote(value) ? -1 : undefined)
+    : value
 }
 
 function needsMasking(value: string): boolean {
@@ -86,7 +94,7 @@ function needsMasking(value: string): boolean {
 
 const sensitivePatterns: Array<{ type: SensitiveType; label: string; pattern: RegExp }> = [
   { type: 'aws-access-key', label: 'AWS access key ID', pattern: /\bAKIA[0-9A-Z]{16}\b/ },
-  { type: 'bearer-token', label: 'Bearer token', pattern: /\bBearer\s+[A-Za-z0-9._~+/-]+=*/i },
+  { type: 'bearer-token', label: 'Bearer token', pattern: /\bBearer[ \t]+[A-Za-z0-9._~+/-]+=*/i },
   { type: 'jwt', label: 'JWT-like token', pattern: /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/ },
   { type: 'email-address', label: 'Email address', pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i },
 ]
@@ -101,10 +109,10 @@ export function redactSensitiveValues(input: string): RedactionResult {
       if (!needsMasking(value)) return match
       const quote = value.startsWith('"') || value.startsWith("'") ? value[0] : ''
       replacementCount += 1
-      return `${prefix}${quote}[REDACTED]${quote}`
+      return `${prefix}${quote}[REDACTED]${quote && hasClosingQuote(value) ? quote : ''}`
     },
   )
-  text = text.replace(/(\bBearer\s+)[A-Za-z0-9._~+/-]+=*/gi, (_match, prefix: string) => {
+  text = text.replace(/(\bBearer[ \t]+)[A-Za-z0-9._~+/-]+=*/gi, (_match, prefix: string) => {
     replacementCount += 1
     return `${prefix}[REDACTED]`
   })

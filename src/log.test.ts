@@ -105,6 +105,29 @@ describe('normalizePattern', () => {
 
 describe('redactSensitiveValues', () => {
   it.each([
+    ['password="unfinished secret', 'password="[REDACTED]'],
+    ["password='unfinished secret", "password='[REDACTED]"],
+    ['password="escaped\\"', 'password="[REDACTED]'],
+    ['password="unfinished\r\nINFO completed', 'password="[REDACTED]\r\nINFO completed'],
+    ['token=[REDACTED]suffix', 'token=[REDACTED]'],
+  ])('masks a truncated or marker-prefixed value: %s', (input, expected) => {
+    expect(analyzeLogs(input).sensitiveLineCount).toBe(1)
+    expect(redactSensitiveValues(input)).toEqual({ text: expected, replacementCount: 1 })
+    expect(redactSensitiveValues(expected)).toEqual({ text: expected, replacementCount: 0 })
+  })
+
+  it('does not treat the next log line as a bearer token', () => {
+    const input = 'Authorization: Bearer\nINFO completed'
+    expect(redactSensitiveValues(input)).toEqual({ text: input, replacementCount: 0 })
+  })
+
+  it('masks neighboring credentials independently', () => {
+    expect(redactSensitiveValues('password="first" token=second')).toEqual({
+      text: 'password="[REDACTED]" token=[REDACTED]', replacementCount: 2,
+    })
+  })
+
+  it.each([
     ['password="two word secret"', 'password="[REDACTED]"'],
     ["password='two word secret'", "password='[REDACTED]'"],
     ['{"password": "two word secret", "status": "ok"}', '{"password": "[REDACTED]", "status": "ok"}'],
