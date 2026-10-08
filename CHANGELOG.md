@@ -8,6 +8,9 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
+- Preserve original file line numbers for sensitive findings when multiline
+  entries contain blank lines, including CSV and JSON exports.
+
 - Compute chronological timestamp bounds for unsorted timezone-qualified logs,
   preserving fractional precision and original timestamp text. For ambiguous or
   invalid timestamps, label first/last as file order rather than a time range.

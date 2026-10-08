@@ -315,30 +315,31 @@ export function analyzeLogs(input: string): LogAnalysis {
   let stackTraceLines = 0
   let sensitiveLineCount = 0
 
+  // Folded entries omit blank lines; scan the original input for exact locations.
+  for (const [index, rawLine] of lines.entries()) {
+    const findings = detectSensitiveFindings(rawLine)
+    if (findings.length === 0) continue
+
+    sensitiveLineCount += 1
+    for (const finding of findings) {
+      const existingFinding = sensitiveFindings.get(finding.type)
+      if (existingFinding) {
+        existingFinding.count += 1
+      } else {
+        sensitiveFindings.set(finding.type, {
+          type: finding.type,
+          label: finding.label,
+          count: 1,
+          firstLine: index + 1,
+        })
+      }
+    }
+  }
+
   for (const entry of entries) {
     levelCounts[entry.level] += 1
     continuationLines += entry.continuationLines
     stackTraceLines += entry.stackTraceLines
-
-    for (const [offset, rawLine] of entry.raw.split(/\r?\n/).entries()) {
-      const findings = detectSensitiveFindings(rawLine)
-      if (findings.length === 0) continue
-
-      sensitiveLineCount += 1
-      for (const finding of findings) {
-        const existingFinding = sensitiveFindings.get(finding.type)
-        if (existingFinding) {
-          existingFinding.count += 1
-        } else {
-          sensitiveFindings.set(finding.type, {
-            type: finding.type,
-            label: finding.label,
-            count: 1,
-            firstLine: entry.lineNumber + offset,
-          })
-        }
-      }
-    }
 
     const existing = patterns.get(entry.pattern)
     if (existing) {

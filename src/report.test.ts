@@ -16,6 +16,12 @@ TypeError: Cannot read properties of undefined
 2026-09-21T08:14:05Z ERROR payment failed order_id=900013`)
 const meta = { source: 'incident.log', generatedAt: '2026-09-21T10:00:00.000Z' }
 
+it('exports original sensitive line numbers after blank continuation lines', () => {
+  const result = analyzeLogs('INFO config\n\n  password=fake-value')
+  expect(JSON.parse(buildJsonReport(result, meta)).sensitiveFindings[0].firstLine).toBe(3)
+  expect(buildCsvReport(result, meta).split('\n')).toContain('API key or password assignment,1,3')
+})
+
 it.each([
   ['2026-10-08T11:00:00Z INFO later\n2026-10-08T10:00:00Z INFO earlier', 'chronological', '2026-10-08T10:00:00Z', '2026-10-08T11:00:00Z'],
   ['23:59:59 INFO first\n00:00:01 INFO last', 'input', '23:59:59', '00:00:01'],

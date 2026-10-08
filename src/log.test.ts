@@ -175,6 +175,21 @@ INFO config password="super-secret"`
 })
 
 describe('analyzeLogs', () => {
+  it.each(['\n', '\r\n'])('keeps sensitive finding locations in physical file coordinates with %j line endings', (newline) => {
+    const report = analyzeLogs([
+      '', 'INFO config', '', '  password=fake-value', '  ',
+      '  email=person@example.com token=fake-token', '',
+      'WARN retry password=another-fake-value',
+    ].join(newline))
+    expect(report.parsedLines).toBe(2)
+    expect(report.continuationLines).toBe(2)
+    expect(report.sensitiveLineCount).toBe(3)
+    expect(report.sensitiveFindings).toEqual([
+      { type: 'api-key', label: 'API key or password assignment', count: 3, firstLine: 4 },
+      { type: 'email-address', label: 'Email address', count: 1, firstLine: 6 },
+    ])
+  })
+
   it('preserves sub-millisecond ordering across timezone offsets', () => {
     const report = analyzeLogs('2026-10-08T10:00:00.0009Z INFO later\n2026-10-08T06:00:00.0001-0400 INFO earlier')
     expect(report.firstTimestamp).toBe('2026-10-08T06:00:00.0001-0400')
