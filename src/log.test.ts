@@ -2,6 +2,24 @@ import { describe, expect, it } from 'vitest'
 import { analyzeLogs, normalizePattern, parseLogLines, redactSensitiveValues } from './log'
 
 describe('parseLogLines', () => {
+  it.each([
+    ['INFO error counter reset', 'info', 'error counter reset'],
+    ['[WARN] error rate rising', 'warn', 'error rate rising'],
+    ['2026-10-29T10:00:00Z DEBUG warning handler installed', 'debug', 'warning handler installed'],
+    ['[2026-10-29T10:00:00Z] [NOTICE] panic recovery complete', 'info', 'panic recovery complete'],
+    ['TRACE: error callback started', 'trace', 'error callback started'],
+    ['ERROR panic recovered', 'error', 'panic recovered'],
+    ['WARNING warning threshold exceeded', 'warn', 'warning threshold exceeded'],
+  ])('respects the explicit level and preserves message words in %s', (input, level, message) => {
+    expect(parseLogLines(input)[0]).toMatchObject({ level, message })
+  })
+
+  it('uses explicit levels in aggregate counts and repeated patterns', () => {
+    const analysis = analyzeLogs('INFO error counter reset\nINFO error counter reset\nWARN error rate rising')
+    expect(analysis.levelCounts).toMatchObject({ info: 2, warn: 1, error: 0 })
+    expect(analysis.topPatterns[0]).toMatchObject({ pattern: 'error counter reset', count: 2, levels: ['info'] })
+  })
+
   it('detects timestamps, levels and normalized message patterns', () => {
     const entries = parseLogLines(
       '2026-09-21T08:14:04Z ERROR payment failed order_id=900012 code=502 trace_id=6f1a2c3d-1111-4b22-8c33-998877665544',

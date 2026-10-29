@@ -6,6 +6,12 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+
+- Prefer an explicit leading log level (after an optional timestamp) over words
+  in the message. `INFO error counter reset` now counts as info, not error.
+  Remove only the leading level token so words such as `panic` stay in the message.
+
 ## [0.3.2] - 2026-10-08
 
 ### Fixed

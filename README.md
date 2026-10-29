@@ -52,6 +52,13 @@ npm run build
 
 The tests cover local file validation, sensitive-value masking, level detection, timestamp extraction, multiline stack trace folding across common runtimes, pattern normalization, repeated pattern counts, JSON reports, CSV reports and safe report file names.
 
+Level detection prefers a leading level such as `INFO`, `[WARN]` or `DEBUG:`
+after an optional timestamp, including aliases such as `NOTICE` and `FATAL`.
+Message words do not override that explicit level: `INFO error counter reset`
+counts as info and keeps `error counter reset` as its message. Lines without a
+recognized leading level retain heuristic keyword detection; this is not a
+schema-aware parser for arbitrary structured logs.
+
 ## Privacy
 
 CSV exports prefix formula-like text cells with an apostrophe and quote them to

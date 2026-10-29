@@ -142,7 +142,18 @@ function detectTimestamp(line: string): string | undefined {
   return undefined
 }
 
-function detectLevel(line: string): LogLevel {
+function leadingLevel(message: string): { level: LogLevel; length: number } | undefined {
+  const match = /^[\s[\]():|,.-]*(fatal|error|err|exception|panic|warning|warn|info|notice|debug|trace)(?=\s|[\]:|,.-]|$)/i.exec(message)
+  if (!match) return undefined
+  const level = levelPatterns.find(([, pattern]) => pattern.test(match[1]))?.[0]
+  return level ? { level, length: match[0].length } : undefined
+}
+
+function detectLevel(line: string, timestamp: string | undefined): LogLevel {
+  const message = timestamp ? line.trim().replace(timestamp, ' ') : line.trim()
+  const explicit = leadingLevel(message)
+  if (explicit) return explicit.level
+
   for (const [level, pattern] of levelPatterns) {
     if (pattern.test(line)) return level
   }
@@ -162,7 +173,10 @@ function detectSensitiveFindings(line: string): Array<{ type: SensitiveType; lab
 function stripMetadata(line: string, timestamp: string | undefined, level: LogLevel): string {
   let message = line.trim()
   if (timestamp) message = message.replace(timestamp, ' ')
-  if (level !== 'unknown') {
+  const explicit = leadingLevel(message)
+  if (explicit) {
+    message = message.slice(explicit.length)
+  } else if (level !== 'unknown') {
     message = message.replace(new RegExp(`\\b${level}\\b`, 'i'), ' ')
     if (level === 'error') message = message.replace(/\b(fatal|err|exception|panic)\b/i, ' ')
     if (level === 'warn') message = message.replace(/\bwarning\b/i, ' ')
@@ -242,7 +256,7 @@ export function parseLogLines(input: string): LogEntry[] {
     .map((raw, index) => ({ raw, lineNumber: index + 1 }))
     .filter((line) => line.raw.trim().length > 0)) {
     const timestamp = detectTimestamp(raw)
-    const level = detectLevel(raw)
+    const level = detectLevel(raw, timestamp)
     const previous = entries.at(-1)
 
     if (previous && shouldAttachToPrevious(raw, timestamp, level)) {
