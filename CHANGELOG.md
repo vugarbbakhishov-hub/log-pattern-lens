@@ -6,6 +6,8 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-29
+
 ### Fixed
 
 - Split LF, CRLF, CR-only and mixed line endings consistently. Keep entry counts,

@@ -10,9 +10,8 @@ The project is published with GitHub Pages:
 
 https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 
-Latest release: [v0.3.2](https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.3.2),
-with chronological timestamp bounds, accurate sensitive finding locations and
-formula-like text handling in CSV reports.
+Latest release: [v0.3.3](https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.3.3),
+with explicit log-level precedence and consistent LF, CRLF and CR-only parsing.
 
 ## Features
 
