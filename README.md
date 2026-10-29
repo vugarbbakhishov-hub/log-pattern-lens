@@ -24,6 +24,7 @@ with explicit log-level precedence and consistent LF, CRLF and CR-only parsing.
 - Load focused sample logs for stack traces, sensitive data review and latency bursts
 - Fold multiline stack traces, including JavaScript, Python, Go panic and JVM-style frames, into the previous log entry instead of inflating error counts
 - Surface repeated message patterns with counts and examples
+- Filter pattern groups by log level, including groups outside the initial top eight
 - Preview CSV or JSON reports with visible line counts before downloading or copying a short excerpt
 - Flag possible sensitive lines such as tokens, API keys, JWTs and email addresses before sharing
 - Locate sensitive findings by their original file line numbers, including blank lines inside multiline entries
@@ -58,6 +59,18 @@ Message words do not override that explicit level: `INFO error counter reset`
 counts as info and keeps `error counter reset` as its message. Lines without a
 recognized leading level retain heuristic keyword detection; this is not a
 schema-aware parser for arbitrary structured logs.
+
+## Filtering patterns
+
+Use **Pattern level** to find groups containing ERROR, WARN, INFO, DEBUG, TRACE
+or UNKNOWN entries. The filter searches every group before showing up to eight
+results in frequency order. The visible count shows how many groups match.
+
+A normalized message can appear at several levels. Each card lists all its
+levels; its count, first line and example still describe the whole group, not
+just entries at the selected level. The overview, report preview and CSV/JSON
+downloads always cover the entire input. Loading a sample or local file, or
+clearing the input, resets the filter to **All levels**; editing text retains it.
 
 ## Privacy
 

@@ -8,9 +8,9 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; min-height: 100vh; }
-button, textarea, input { font: inherit; }
-button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visible {
+body { margin: 0; min-width: 280px; min-height: 100vh; }
+button, textarea, input, select { font: inherit; }
+button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
   outline: 3px solid #6d5dfc;
   outline-offset: 3px;
 }
@@ -74,7 +74,10 @@ button.primary:hover { background: #5848e8; }
 .level-list span { color: #475569; font: 650 11px/1 ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; }
 meter { width: 100%; height: 12px; }
 .patterns { margin: 20px 0 20px; }
-.patterns .panel-heading > span { color: #64748b; font-size: 12px; font-weight: 700; }
+.pattern-filter { display: grid; gap: 7px; color: #475569; font-size: 12px; font-weight: 750; }
+.pattern-filter select { min-width: 160px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 11px; color: #334155; background: #f8fafc; }
+.pattern-filter-help { margin: 18px 0 0; color: #64748b; font-size: 12px; line-height: 1.6; }
+.pattern-count { margin: 10px 0 0; color: #475569; font-size: 12px; font-weight: 750; }
 .pattern-list { margin-top: 20px; display: grid; gap: 10px; }
 .pattern-list article { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; padding: 16px; border: 1px solid #e2e8f0; border-radius: 16px; background: #fbfdff; }
 .pattern-list strong { font: 650 13px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }

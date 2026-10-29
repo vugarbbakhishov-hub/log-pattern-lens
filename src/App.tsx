@@ -1,6 +1,6 @@
 import { useMemo, useState, type ChangeEvent } from 'react'
 import { createFileReadGuard, validateLogFile } from './file'
-import { analyzeLogs, redactSensitiveValues } from './log'
+import { analyzeLogs, redactSensitiveValues, type LogLevel } from './log'
 import {
   buildCsvReport,
   buildJsonReport,
@@ -57,18 +57,24 @@ TypeError: Cannot read properties of undefined
 ]
 
 const defaultSample = logSamples[0]
+const patternLevels: LogLevel[] = ['error', 'warn', 'info', 'debug', 'trace', 'unknown']
 
 function App() {
   const [fileRead] = useState(createFileReadGuard)
   const [logText, setLogText] = useState(defaultSample.contents)
   const [sourceName, setSourceName] = useState(defaultSample.fileName)
   const [previewFormat, setPreviewFormat] = useState<ReportFormat>('csv')
+  const [patternLevel, setPatternLevel] = useState<LogLevel | 'all'>('all')
   const [copyStatus, setCopyStatus] = useState('')
   const [fileStatus, setFileStatus] = useState('')
   const [privacyStatus, setPrivacyStatus] = useState('')
   const analysis = useMemo(() => analyzeLogs(logText), [logText])
   const repeatedPatterns = analysis.topPatterns.filter((pattern) => pattern.count > 1)
   const primaryPattern = analysis.topPatterns[0]
+  const matchingPatterns = analysis.topPatterns.filter(
+    (pattern) => patternLevel === 'all' || pattern.levels.includes(patternLevel),
+  )
+  const visiblePatterns = matchingPatterns.slice(0, 8)
   const reportPreview = useMemo(
     () => buildReportPreviewDetails(analysis, { source: sourceName, generatedAt: 'preview' }, previewFormat),
     [analysis, previewFormat, sourceName],
@@ -78,6 +84,7 @@ function App() {
     fileRead.cancel()
     setLogText(sample.contents)
     setSourceName(sample.fileName)
+    setPatternLevel('all')
     setCopyStatus('')
     setFileStatus('')
     setPrivacyStatus('')
@@ -87,6 +94,7 @@ function App() {
     fileRead.cancel()
     setLogText('')
     setSourceName('pasted-logs.log')
+    setPatternLevel('all')
     setCopyStatus('')
     setFileStatus('')
     setPrivacyStatus('')
@@ -109,6 +117,7 @@ function App() {
     await fileRead.read(file, (contents) => {
       setLogText(contents)
       setSourceName(file.name)
+      setPatternLevel('all')
       setCopyStatus('')
       setPrivacyStatus('')
       setFileStatus(`Opened ${file.name} locally (${contents.length.toLocaleString()} characters)`)
@@ -303,25 +312,50 @@ function App() {
             <p className="eyebrow">Patterns</p>
             <h2 id="patterns-title">Top normalized messages</h2>
           </div>
-          <span>{analysis.topPatterns.length} pattern{analysis.topPatterns.length === 1 ? '' : 's'}</span>
+          <label className="pattern-filter" htmlFor="pattern-level">
+            Pattern level
+            <select
+              id="pattern-level"
+              value={patternLevel}
+              onChange={(event) => setPatternLevel(event.target.value as LogLevel | 'all')}
+              aria-describedby="pattern-filter-help"
+            >
+              <option value="all">All levels</option>
+              {patternLevels.map((level) => (
+                <option key={level} value={level}>{level.toUpperCase()}</option>
+              ))}
+            </select>
+          </label>
         </div>
 
+        <p className="pattern-filter-help" id="pattern-filter-help">
+          Shows groups containing the selected level. Counts, examples and line numbers cover the
+          whole group. Overview and reports always include all logs.
+        </p>
+        <p className="pattern-count" role="status">
+          Showing {visiblePatterns.length} of {matchingPatterns.length}
+          {patternLevel === 'all' ? ' total' : ` matching ${patternLevel.toUpperCase()}`}
+          {' '}pattern{matchingPatterns.length === 1 ? '' : 's'}
+        </p>
         <div className="pattern-list">
-          {analysis.topPatterns.slice(0, 8).map((pattern) => (
+          {visiblePatterns.map((pattern) => (
             <article key={`${pattern.firstLine}-${pattern.pattern}`}>
               <div>
                 <strong>{pattern.pattern}</strong>
                 <p>{pattern.examples[0]}</p>
                 <small className="pattern-meta">
-                  line {pattern.firstLine}
+                  {pattern.levels.map((level) => level.toUpperCase()).join(' / ')} - line {pattern.firstLine}
                   {pattern.stackTraceLines > 0 ? ` - ${pattern.stackTraceLines} stack trace line${pattern.stackTraceLines === 1 ? '' : 's'}` : ''}
                   {pattern.continuationLines > pattern.stackTraceLines ? ` - ${pattern.continuationLines - pattern.stackTraceLines} folded continuation line${pattern.continuationLines - pattern.stackTraceLines === 1 ? '' : 's'}` : ''}
                 </small>
               </div>
-              <span>{pattern.count}x</span>
+              <span aria-label={`${pattern.count} total occurrences`}>{pattern.count}x</span>
             </article>
           ))}
           {analysis.topPatterns.length === 0 && <p className="empty-state">Paste logs to see repeated patterns.</p>}
+          {analysis.topPatterns.length > 0 && matchingPatterns.length === 0 && (
+            <p className="empty-state">No patterns contain {patternLevel.toUpperCase()} entries. Choose All levels to remove this filter.</p>
+          )}
         </div>
       </section>
 
