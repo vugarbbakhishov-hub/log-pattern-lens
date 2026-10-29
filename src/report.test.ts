@@ -50,6 +50,17 @@ it('does not retain masked JSON credentials in exported examples or patterns', (
 })
 
 describe('buildJsonReport', () => {
+  it('exports grouped request IDs with original examples in JSON and CSV', () => {
+    const result = analyzeLogs('WARN slow request_id=req-78\nWARN slow request_id=req-79')
+    const report = JSON.parse(buildJsonReport(result, meta))
+    expect(report.topPatterns).toEqual([{
+      pattern: 'slow request_id=<request-id>', count: 2, levels: ['warn'],
+      firstLine: 1, continuationLines: 0, stackTraceLines: 0,
+      examples: ['slow request_id=req-78', 'slow request_id=req-79'],
+    }])
+    expect(buildCsvReport(result, meta)).toContain('slow request_id=<request-id>,2,warn,1,0,0,slow request_id=req-78')
+  })
+
   it('serializes the summary, level counts and top patterns', () => {
     const report = JSON.parse(buildJsonReport(analysis, meta))
 
@@ -59,7 +70,7 @@ describe('buildJsonReport', () => {
     expect(report.summary.stackTraceLines).toBe(2)
     expect(report.summary.sensitiveLineCount).toBe(0)
     expect(report.levelCounts.error).toBe(2)
-    expect(report.topPatterns[0].pattern).toBe('api ok request_id=req-1')
+    expect(report.topPatterns[0].pattern).toBe('api ok request_id=<request-id>')
   })
 })
 

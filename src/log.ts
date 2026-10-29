@@ -217,6 +217,16 @@ function shouldAttachToPrevious(line: string, timestamp: string | undefined, lev
 
 export function normalizePattern(message: string): string {
   return message
+    // Normalize complete request ID fields, not short status codes or counters.
+    .replace(
+      /(^|[\s,;([{])(request[_-]?id[ \t]*[=:][ \t]*)("[A-Za-z0-9_-]+"|'[A-Za-z0-9_-]+'|[A-Za-z0-9_-]+)(?=$|[\s,;)\]}])/gi,
+      (match, boundary: string, field: string, value: string) => {
+        const quote = value.startsWith('"') || value.startsWith("'") ? value[0] : ''
+        const token = quote ? value.slice(1, -1) : value
+        if (/^(?:null|undefined|none|unknown|-+)$/i.test(token)) return match
+        return `${boundary}${field}${quote}<request-id>${quote}`
+      },
+    )
     .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi, '<uuid>')
     .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '<ip>')
     .replace(/\b0x[0-9a-f]+\b/gi, '<hex>')

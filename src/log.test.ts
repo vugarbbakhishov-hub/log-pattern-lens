@@ -126,6 +126,30 @@ Exception in thread "main" java.lang.IllegalStateException: payment state missin
 })
 
 describe('normalizePattern', () => {
+  it.each([
+    ['request_id=req-78', 'request_id=<request-id>'],
+    ['requestId=7', 'requestId=<request-id>'],
+    ['REQUEST-ID: abc_X9', 'REQUEST-ID: <request-id>'],
+    ['request_id="req-78"', 'request_id="<request-id>"'],
+    ["request_id='short'", "request_id='<request-id>'"],
+    ['(request_id=req-78);request_id=req-79', '(request_id=<request-id>);request_id=<request-id>'],
+    ['request_id=6f1a2c3d-1111-4b22-8c33-998877665544', 'request_id=<request-id>'],
+  ])('groups explicit request ID tokens in %s', (input, expected) => {
+    expect(normalizePattern(input)).toBe(expected)
+    expect(normalizePattern(expected)).toBe(expected)
+  })
+
+  it.each([
+    'code=502 status=404 attempt=2 order_id=78',
+    'parent_request_id=req-78 request_id_suffix=req-79 context.request_id=7',
+    'request_id= requestId="" request-id=\nINFO ready',
+    'request_id="two words" requestId=req/78 request-id=abc.def',
+    'GET /request_id=req-78?status=502',
+    'request_id=null requestId="none" request-id=- request_id=unknown request_id=undefined',
+  ])('does not generalize unrelated fields or partial ID values: %s', (input) => {
+    expect(normalizePattern(input)).toBe(input.replace(/\s+/g, ' ').trim())
+  })
+
   it('replaces volatile identifiers while keeping the stable message shape', () => {
     expect(normalizePattern('GET /users/12345 failed from 10.2.0.4 in 812ms')).toBe(
       'GET /users/<number> failed from <ip> in <duration>',
@@ -205,6 +229,29 @@ INFO config password="super-secret"`
 })
 
 describe('analyzeLogs', () => {
+  it('groups short request IDs but preserves status codes, attempt counts and original examples', () => {
+    const input = [
+      'WARN request slow request_id=req-78 code=502 attempt=1 duration=1280ms',
+      'WARN request slow request_id=req-79 code=502 attempt=1 duration=1315ms',
+      'WARN request slow request_id=req-80 code=503 attempt=1 duration=1400ms',
+      'WARN request slow request_id=req-81 code=502 attempt=2 duration=1500ms',
+    ].join('\n')
+    const result = analyzeLogs(input)
+    expect(result.topPatterns).toHaveLength(3)
+    expect(result.topPatterns[0]).toMatchObject({
+      pattern: 'request slow request_id=<request-id> code=502 attempt=1 duration=<duration>',
+      count: 2,
+      firstLine: 1,
+      levels: ['warn'],
+      examples: [
+        'request slow request_id=req-78 code=502 attempt=1 duration=1280ms',
+        'request slow request_id=req-79 code=502 attempt=1 duration=1315ms',
+      ],
+    })
+    expect(parseLogLines(input)[0].raw).toBe(input.split('\n')[0])
+    expect(result.levelCounts.warn).toBe(4)
+  })
+
   it('handles mixed line endings and preserves blank and trailing lines', () => {
     const report = analyzeLogs('INFO ready\r\n\rWARN retry\n  password=fake-value\r')
     expect(report).toMatchObject({ totalLines: 5, parsedLines: 2, continuationLines: 1, sensitiveLineCount: 1 })

@@ -14,6 +14,10 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
+- Group short request IDs in explicit request ID fields, including quoted token
+  values. Preserve short status codes, attempt counts, missing-value markers
+  and original examples; CSV and JSON reports use the same grouped patterns.
+
 - Allow room for a vertical scrollbar on 320px viewports without forcing
   horizontal scrolling.
 

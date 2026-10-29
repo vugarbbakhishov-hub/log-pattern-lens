@@ -21,6 +21,7 @@ with explicit log-level precedence and consistent LF, CRLF and CR-only parsing.
 - Detect common ISO and time-only timestamps
 - Calculate chronological bounds for valid ISO timestamps with explicit timezones, including unsorted input and fractional seconds. If any detected timestamp lacks a date/timezone or is invalid, show first/last in file order instead. CSV and JSON reports include `timestampOrder` (`chronological`, `input`, or `none`); entries without timestamps do not participate in the range.
 - Normalize volatile values such as UUIDs, IP addresses, long IDs and durations
+- Group short request IDs in explicit `request_id`, `requestId` and `request-id` fields
 - Load focused sample logs for stack traces, sensitive data review and latency bursts
 - Fold multiline stack traces, including JavaScript, Python, Go panic and JVM-style frames, into the previous log entry instead of inflating error counts
 - Surface repeated message patterns with counts and examples
@@ -71,6 +72,25 @@ levels; its count, first line and example still describe the whole group, not
 just entries at the selected level. The overview, report preview and CSV/JSON
 downloads always cover the entire input. Loading a sample or local file, or
 clearing the input, resets the filter to **All levels**; editing text retains it.
+
+## Request ID grouping
+
+Short request IDs no longer split otherwise identical messages into separate
+patterns. For example, `WARN slow request_id=req-78` and
+`WARN slow request_id=req-79` share the pattern `slow request_id=<request-id>`.
+Status codes such as `502`/`503` and attempt counts such as `1`/`2` remain distinct.
+
+This rule recognizes unquoted field names `request_id`, `requestId` and
+`request-id` (case-insensitive), followed by `=` or `:`. Values may be bare or
+single/double quoted and contain ASCII letters, digits, underscores and hyphens.
+It requires a complete field at the start of a message or after whitespace,
+a comma, semicolon or opening bracket. Empty values, missing-value markers
+(`null`, `undefined`, `none`, `unknown`, hyphens), dotted field names and partial
+values are not generalized by this rule. Existing UUID, IP, hex, long-number
+and duration rules still apply independently.
+
+Grouping changes pattern labels only. The input and report examples retain
+their request IDs; normalization does not redact them for sharing.
 
 ## Privacy
 
