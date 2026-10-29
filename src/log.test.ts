@@ -2,6 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { analyzeLogs, normalizePattern, parseLogLines, redactSensitiveValues } from './log'
 
 describe('parseLogLines', () => {
+  it.each(['\n', '\r\n', '\r'])('preserves entries and stack-frame coordinates with %j endings', (newline) => {
+    const entries = parseLogLines([
+      '2026-10-29T10:00:00Z ERROR request failed',
+      '    at worker (worker.ts:8:2)',
+      '',
+      '2026-10-29T10:00:01Z INFO recovered',
+    ].join(newline))
+    expect(entries).toHaveLength(2)
+    expect(entries[0]).toMatchObject({ lineNumber: 1, endLineNumber: 2, stackTraceLines: 1 })
+    expect(entries[1]).toMatchObject({ lineNumber: 4, level: 'info', message: 'recovered' })
+  })
+
   it.each([
     ['INFO error counter reset', 'info', 'error counter reset'],
     ['[WARN] error rate rising', 'warn', 'error rate rising'],
@@ -193,7 +205,14 @@ INFO config password="super-secret"`
 })
 
 describe('analyzeLogs', () => {
-  it.each(['\n', '\r\n'])('keeps sensitive finding locations in physical file coordinates with %j line endings', (newline) => {
+  it('handles mixed line endings and preserves blank and trailing lines', () => {
+    const report = analyzeLogs('INFO ready\r\n\rWARN retry\n  password=fake-value\r')
+    expect(report).toMatchObject({ totalLines: 5, parsedLines: 2, continuationLines: 1, sensitiveLineCount: 1 })
+    expect(report.levelCounts).toMatchObject({ info: 1, warn: 1, error: 0 })
+    expect(report.sensitiveFindings[0].firstLine).toBe(4)
+  })
+
+  it.each(['\n', '\r\n', '\r'])('keeps sensitive finding locations in physical file coordinates with %j line endings', (newline) => {
     const report = analyzeLogs([
       '', 'INFO config', '', '  password=fake-value', '  ',
       '  email=person@example.com token=fake-token', '',

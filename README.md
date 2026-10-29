@@ -28,6 +28,7 @@ formula-like text handling in CSV reports.
 - Preview CSV or JSON reports with visible line counts before downloading or copying a short excerpt
 - Flag possible sensitive lines such as tokens, API keys, JWTs and email addresses before sharing
 - Locate sensitive findings by their original file line numbers, including blank lines inside multiline entries
+- Recognize LF, CRLF, CR-only and mixed line endings for parsing and finding locations. A carriage return is treated as a line break, not a terminal cursor rewrite.
 - Mask detected sensitive values locally while preserving the surrounding log structure
 - Mask credential assignments in JSON-style logs and quoted values containing spaces or escaped quotes
 - Export a CSV or JSON triage report in the current tab

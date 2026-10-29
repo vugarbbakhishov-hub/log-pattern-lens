@@ -227,7 +227,7 @@ export function normalizePattern(message: string): string {
 }
 
 function normalizeEntryPattern(entry: LogEntry): string {
-  const [firstMessage] = entry.message.split(/\r?\n/)
+  const [firstMessage] = entry.message.split(/\r\n|\r|\n/)
   const genericContinuationLines = entry.continuationLines - entry.stackTraceLines
   const markers = []
 
@@ -252,7 +252,7 @@ export function parseLogLines(input: string): LogEntry[] {
   const entries: LogEntry[] = []
 
   for (const { raw, lineNumber } of input
-    .split(/\r?\n/)
+    .split(/\r\n|\r|\n/)
     .map((raw, index) => ({ raw, lineNumber: index + 1 }))
     .filter((line) => line.raw.trim().length > 0)) {
     const timestamp = detectTimestamp(raw)
@@ -319,7 +319,7 @@ function timestampBounds(timestamps: string[]): Pick<LogAnalysis, 'firstTimestam
 }
 
 export function analyzeLogs(input: string): LogAnalysis {
-  const lines = input.split(/\r?\n/)
+  const lines = input.split(/\r\n|\r|\n/)
   const entries = parseLogLines(input)
   const levelCounts = emptyCounts()
   const timestamps = entries.flatMap((entry) => (entry.timestamp ? [entry.timestamp] : []))

@@ -8,6 +8,9 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
+- Split LF, CRLF, CR-only and mixed line endings consistently. Keep entry counts,
+  stack-frame coordinates and sensitive finding line numbers accurate for each.
+
 - Prefer an explicit leading log level (after an optional timestamp) over words
   in the message. `INFO error counter reset` now counts as info, not error.
   Remove only the leading level token so words such as `panic` stay in the message.
