@@ -6,6 +6,12 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Security
+
+- Update Vite and Vitest to patched releases and refresh the development-only
+  source-map-js and Zod dependencies. The updated lockfile reports no known
+  vulnerabilities in `npm audit` as of 2026-10-29.
+
 ### Added
 
 - Filter pattern groups by log level before applying the eight-card display
