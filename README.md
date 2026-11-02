@@ -10,8 +10,8 @@ The project is published with GitHub Pages:
 
 https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 
-Latest release: [v0.3.3](https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.3.3),
-with explicit log-level precedence and consistent LF, CRLF and CR-only parsing.
+Latest release: [v0.4.0](https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.4.0),
+with pattern-level filtering, short request-ID grouping and refreshed build tooling.
 
 ## Features
 

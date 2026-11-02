@@ -6,16 +6,7 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-### Maintenance
-
-- Move CI and GitHub Pages workflows to Node.js 24-based actions, including
-  checkout, Node setup and the Pages artifact/deployment steps.
-
-### Security
-
-- Update Vite and Vitest to patched releases and refresh the development-only
-  source-map-js and Zod dependencies. The updated lockfile reports no known
-  vulnerabilities in `npm audit` as of 2026-10-29.
+## [0.4.0] - 2026-11-02
 
 ### Added
 
@@ -31,6 +22,17 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 - Allow room for a vertical scrollbar on 320px viewports without forcing
   horizontal scrolling.
+
+### Security
+
+- Update Vite and Vitest to patched releases and refresh the development-only
+  source-map-js and Zod dependencies. The updated lockfile reports no known
+  vulnerabilities in `npm audit` as of 2026-10-29.
+
+### Maintenance
+
+- Move CI and GitHub Pages workflows to Node.js 24-based actions, including
+  checkout, Node setup and the Pages artifact/deployment steps.
 
 ## [0.3.3] - 2026-10-29
 
