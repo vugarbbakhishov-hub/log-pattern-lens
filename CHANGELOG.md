@@ -6,6 +6,11 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Maintenance
+
+- Move CI and GitHub Pages workflows to Node.js 24-based actions, including
+  checkout, Node setup and the Pages artifact/deployment steps.
+
 ### Security
 
 - Update Vite and Vitest to patched releases and refresh the development-only
