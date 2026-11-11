@@ -10,8 +10,8 @@ The project is published with GitHub Pages:
 
 https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 
-Latest release: [v0.4.0](https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.4.0),
-with pattern-level filtering, short request-ID grouping and refreshed build tooling.
+Latest release: [v0.4.1](https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.4.1),
+with accurate parsing of indented timestamps, a sample walkthrough and feedback links.
 
 ## Try it in two minutes
 
