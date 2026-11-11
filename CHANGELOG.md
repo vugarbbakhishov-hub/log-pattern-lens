@@ -6,6 +6,12 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+
+- Recognize timestamps after leading spaces, tabs or a byte-order-mark character.
+  Keep explicit levels, repeated groups and time bounds accurate for indented
+  logs, and keep timestamped entries separate from preceding stack traces.
+
 ### Added
 
 - Link the demo to a sample walkthrough with expected results and to public

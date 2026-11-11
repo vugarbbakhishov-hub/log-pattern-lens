@@ -50,6 +50,30 @@ it('does not retain masked JSON credentials in exported examples or patterns', (
 })
 
 describe('buildJsonReport', () => {
+  it('exports correct counts, bounds and groups for indented timestamps', () => {
+    const result = analyzeLogs([
+      '  2026-11-11T08:00:02Z INFO error counter reset',
+      '\t2026-11-11T08:00:01Z INFO error counter reset',
+      '  2026-11-11T08:00:03Z WARN retry scheduled',
+    ].join('\n'))
+    const report = JSON.parse(buildJsonReport(result, meta))
+    expect(report.summary).toMatchObject({
+      parsedLines: 3, timestampedLines: 3, timestampOrder: 'chronological',
+      firstTimestamp: '2026-11-11T08:00:01Z', lastTimestamp: '2026-11-11T08:00:03Z',
+    })
+    expect(report.levelCounts).toMatchObject({ info: 2, warn: 1, error: 0 })
+    expect(report.topPatterns).toHaveLength(2)
+    expect(report.topPatterns[0]).toMatchObject({
+      pattern: 'error counter reset', count: 2, levels: ['info'], firstLine: 1,
+      examples: ['error counter reset'],
+    })
+    const csv = buildCsvReport(result, meta).split('\n')
+    expect(csv).toContain('Timestamped entries,3')
+    expect(csv).toContain('Timestamp order,chronological')
+    expect(csv).toContain('error,0')
+    expect(csv).toContain('error counter reset,2,info,1,0,0,error counter reset')
+  })
+
   it('exports grouped request IDs with original examples in JSON and CSV', () => {
     const result = analyzeLogs('WARN slow request_id=req-78\nWARN slow request_id=req-79')
     const report = JSON.parse(buildJsonReport(result, meta))

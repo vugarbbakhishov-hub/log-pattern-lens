@@ -135,8 +135,10 @@ export function redactSensitiveValues(input: string): RedactionResult {
 }
 
 function detectTimestamp(line: string): string | undefined {
+  // Ignore indentation/BOM for detection while keeping raw text and line coordinates.
+  const start = line.trimStart()
   for (const pattern of timestampPatterns) {
-    const match = line.match(pattern)
+    const match = start.match(pattern)
     if (match) return match[1]
   }
   return undefined

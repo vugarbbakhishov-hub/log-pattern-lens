@@ -2,6 +2,39 @@ import { describe, expect, it } from 'vitest'
 import { analyzeLogs, normalizePattern, parseLogLines, redactSensitiveValues } from './log'
 
 describe('parseLogLines', () => {
+  it.each([
+    ['  ', '2026-11-11T08:00:00Z'],
+    ['\t', '[2026-11-11T08:00:00Z]'],
+    ['\uFEFF', '2026-11-11T08:00:00Z'],
+    [' \t', '2026-11-11 08:00:00,123'],
+    ['  ', '[08:00:00.123]'],
+  ])('recognizes a timestamp after leading whitespace %j in %s', (prefix, timestamp) => {
+    const raw = `${prefix}${timestamp} INFO error counter reset`
+    expect(parseLogLines(raw)[0]).toMatchObject({
+      raw,
+      lineNumber: 1,
+      timestamp: timestamp.replace(/^\[|\]$/g, ''),
+      level: 'info',
+      message: 'error counter reset',
+      pattern: 'error counter reset',
+    })
+  })
+
+  it('keeps indented timestamped entries separate from their stack frames', () => {
+    const entries = parseLogLines([
+      '  2026-11-11T08:00:00Z ERROR worker failed',
+      '    at worker (worker.ts:8:2)',
+      '',
+      '\t2026-11-11T08:00:01Z worker ready',
+    ].join('\n'))
+    expect(entries).toHaveLength(2)
+    expect(entries[0]).toMatchObject({ lineNumber: 1, endLineNumber: 2, stackTraceLines: 1 })
+    expect(entries[1]).toMatchObject({
+      lineNumber: 4, timestamp: '2026-11-11T08:00:01Z', level: 'unknown',
+      message: 'worker ready', continuationLines: 0,
+    })
+  })
+
   it.each(['\n', '\r\n', '\r'])('preserves entries and stack-frame coordinates with %j endings', (newline) => {
     const entries = parseLogLines([
       '2026-10-29T10:00:00Z ERROR request failed',

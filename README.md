@@ -63,6 +63,8 @@ The tests cover local file validation, sensitive-value masking, level detection,
 
 Level detection prefers a leading level such as `INFO`, `[WARN]` or `DEBUG:`
 after an optional timestamp, including aliases such as `NOTICE` and `FATAL`.
+Timestamp detection ignores leading spaces, tabs and a byte-order-mark character;
+original source line numbers and stack-frame indentation remain intact.
 Message words do not override that explicit level: `INFO error counter reset`
 counts as info and keeps `error counter reset` as its message. Lines without a
 recognized leading level retain heuristic keyword detection; this is not a
