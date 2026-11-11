@@ -6,6 +6,13 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+- Link the demo to a sample walkthrough with expected results and to public
+  bug/feedback forms that open in a new tab without attaching log data.
+- Add a usability feedback form and ask for reproduction steps in bug reports;
+  log samples are optional for interface problems.
+
 ## [0.4.0] - 2026-11-02
 
 ### Added

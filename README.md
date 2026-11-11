@@ -13,6 +13,13 @@ https://vugarbbakhishov-hub.github.io/log-pattern-lens/
 Latest release: [v0.4.0](https://github.com/vugarbbakhishov-hub/log-pattern-lens/releases/tag/v0.4.0),
 with pattern-level filtering, short request-ID grouping and refreshed build tooling.
 
+## Try it in two minutes
+
+Follow the [sample walkthrough](docs/try-it.md) to group slow requests, filter
+patterns and compare a full-input JSON report with expected results. No private
+logs are needed. The demo's **Share feedback** and **Report a problem** links
+open public GitHub issue forms in a new tab and keep your analysis open.
+
 ## Features
 
 - Paste logs directly into the browser

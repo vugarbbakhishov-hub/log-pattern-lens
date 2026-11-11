@@ -221,6 +221,14 @@ function App() {
             ))}
           </div>
 
+          <p className="sample-help">
+            New here?{' '}
+            <a href="https://github.com/vugarbbakhishov-hub/log-pattern-lens/blob/main/docs/try-it.md" target="_blank" rel="noreferrer">
+              Try the sample walkthrough
+            </a>{' '}
+            (opens in a new tab).
+          </p>
+
           <textarea
             aria-label="Log input"
             value={logText}
@@ -389,7 +397,20 @@ function App() {
         </pre>
       </section>
 
-      <footer><p>Built for quick local log review. No uploads, no analytics.</p></footer>
+      <footer>
+        <p>Built for quick local log review. No uploads, no analytics.</p>
+        <nav className="feedback-links" aria-label="Help and feedback">
+          <a href="https://github.com/vugarbbakhishov-hub/log-pattern-lens/issues/new?template=bug_report.yml" target="_blank" rel="noreferrer">
+            Report a problem
+          </a>
+          <a href="https://github.com/vugarbbakhishov-hub/log-pattern-lens/issues/new?template=usability_feedback.yml" target="_blank" rel="noreferrer">
+            Share feedback
+          </a>
+        </nav>
+        <p className="feedback-help">
+          Feedback opens GitHub in a new tab. Only text you submit is shared; your logs are not attached.
+        </p>
+      </footer>
     </main>
   )
 }

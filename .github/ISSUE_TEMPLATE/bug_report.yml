@@ -5,7 +5,10 @@ labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: Thanks for helping improve Log Pattern Lens. Remove tokens, IPs, customer data and secrets from every sample.
+      value: |
+        Thanks for helping improve Log Pattern Lens. Submitted issues are public.
+        Use a built-in preset or fictional example; remove tokens, IPs, customer data and secrets.
+        See the [sample walkthrough](https://github.com/vugarbbakhishov-hub/log-pattern-lens/blob/main/docs/try-it.md) for expected results.
   - type: textarea
     id: problem
     attributes:
@@ -16,9 +19,17 @@ body:
   - type: textarea
     id: sample
     attributes:
-      label: Minimal anonymized log sample
-      description: Provide the smallest log excerpt that reproduces the problem.
+      label: Preset or minimal fictional log sample
+      description: Name the built-in preset (Stack trace, Security review or Latency burst), or provide the smallest fictional excerpt that reproduces a parsing problem. A sample is optional for interface problems.
       render: text
+    validations:
+      required: false
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Mention whether you pasted text or opened a file, which preset and level filter you selected, and whether the problem affects the overview, pattern cards or a report.
+      placeholder: "1. Choose Latency burst.\n2. Select WARN under Pattern level.\n3. Download the JSON report."
     validations:
       required: true
   - type: input

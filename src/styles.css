@@ -41,6 +41,8 @@ main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
 .sample-strip button[aria-pressed="true"] { border-color: #6d5dfc; background: #eef2ff; color: #3730a3; }
 .sample-strip strong { font-size: 13px; }
 .sample-strip span { color: #64748b; font-size: 12px; line-height: 1.45; }
+.sample-help { margin: 14px 0 0; color: #64748b; font-size: 12px; line-height: 1.6; }
+.sample-help a, .feedback-links a { color: #5145cd; text-underline-offset: 3px; }
 textarea { width: 100%; min-height: 330px; resize: vertical; margin-top: 22px; border: 1px solid #ccd6e3; border-radius: 16px; padding: 16px; color: #1f2937; background: #fbfdff; font: 400 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .actions { display: flex; gap: 9px; margin-top: 14px; flex-wrap: wrap; }
 button { border: 1px solid #cbd5e1; border-radius: 11px; padding: 10px 15px; background: #fff; color: #334155; cursor: pointer; font-size: 13px; font-weight: 750; }
@@ -94,6 +96,9 @@ meter { width: 100%; height: 12px; }
 .report-preview pre { max-height: 360px; overflow: auto; margin: 18px 0 0; padding: 16px; border: 1px solid #d8e2ee; border-radius: 16px; background: #0f172a; color: #dbeafe; font: 400 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
 .report-preview pre:focus-visible { outline: 3px solid #6d5dfc; outline-offset: 3px; }
 footer { text-align: center; color: #64748b; font-size: 12px; padding: 0 0 42px; }
+.feedback-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 12px; }
+.feedback-links a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px; font-weight: 750; }
+.feedback-help { max-width: 560px; margin: 8px auto 0; line-height: 1.6; }
 
 @media (max-width: 880px) {
   main { width: min(100% - 24px, 720px); }
